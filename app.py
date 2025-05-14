@@ -17,7 +17,7 @@ from io import BytesIO
 app = Flask(__name__)
 app.secret_key = 'pawpromise'
 
-API_KEY = "AIzaSyA_aNcMzm8DrD1Rc2XsCxWf9djCgkTHmvQ"  
+API_KEY = ""  #your API key here
 genai.configure(api_key=API_KEY)
 
 last_request_time = 0
@@ -27,7 +27,7 @@ model = genai.GenerativeModel('gemini-1.5-pro')
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_PASSWORD'] = ''#your Password here
 app.config['MYSQL_DB'] = 'pawpromise'
 
 mysql = MySQL(app)
@@ -36,7 +36,7 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'pawpromiseeadoption@gmail.com'
-app.config['MAIL_PASSWORD'] = 'plfg xpiy prne cshp'
+app.config['MAIL_PASSWORD'] = ''#your Password here
 app.config['MAIL_DEFAULT_SENDER'] = 'pawpromiseeadoption@gmail.com'
 
 mail = Mail(app)
