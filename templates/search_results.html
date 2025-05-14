@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - PawPromise-eAdoption</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Sys-profile.css') }}">
+    <style>
+        .sidebar .search-box {
+            width: 100%;
+            padding: 10px;
+            display: none;
+            position: relative;
+        }
+
+        .sidebar .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .sidebar .search-box input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        
+        .result-card {
+            border-radius: 10px;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-card img.profile-pic {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 100px 0;
+        }
+        
+        .badge-user {
+            background-color: #0d6efd;
+        }
+        
+        .badge-org {
+            background-color: #198754;
+        }
+        
+        /* Suggestions dropdown */
+        #suggestions-dropdown {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .suggestion-pic {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    
+    {% include 'nav1.html' %}
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <a class="navbar-brand d-flex flex-column" href="/Share-your-story">
+            <img src="{{ url_for('static', filename='assets/Features/Share Your Story2.png') }}" alt="Share Your Story">
+            <span>Share Your Story</span>
+        </a>
+        <ul class="navbar-nav mt-4">
+            <li class="nav-item"><a class="nav-link" href="/Share-your-story"><i class="fa-solid fa-house"></i>
+                    <span>Feed</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#" id="search-btn"><i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span></a></li>
+            <div class="search-box" id="search-box">
+                <form action="/search" method="GET" id="search-form">
+                    <input type="text" class="form-control" placeholder="Search users and organizations..." name="q" id="search-input" value="{{ query }}" autocomplete="off">
+                    <div id="suggestions-dropdown"></div>
+                </form>
+            </div>
+            <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#upload_post">
+                    <i class="fa-solid fa-square-plus"></i> <span>New Post</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="/Sys-profile"><i class="fa-regular fa-user"></i>
+                    <span>Profile</span></a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="container py-4">
+            <h2 class="mb-4">Search Results: "{{ query }}"</h2>
+            
+            {% if results %}
+                <div class="row">
+                    {% for result in results %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="result-card p-3 bg-white">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ url_for('static', filename='uploads/' + result.profile_pic) if result.profile_pic else url_for('static', filename='uploads/default-profile.png') }}" 
+                                         alt="{{ result.username }}" class="profile-pic me-3">
+                                    <div>
+                                        <h4>{{ result.username }}</h4>
+                                        <span class="badge {% if result.type == 'user' %}badge-user{% else %}badge-org{% endif %}">
+                                            {% if result.type == 'user' %}User{% else %}Organization{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end mt-3">
+                                    <a href="{{ url_for('view_user_profile', username=result.username) }}" class="btn btn-sm btn-primary">
+                                        View Profile
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-results">
+                    <i class="fa-solid fa-search fa-4x mb-3 text-muted"></i>
+                    <h3>No results found</h3>
+                    <p class="text-muted">Try different keywords or check your spelling</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Upload Post Modal -->
+    <div class="modal fade" id="upload_post" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Photo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" class="mb-4">
+                        <div class="input-group">
+                            <div class="row">
+                                <div class="col-12 mt-2">
+                                    <input type="file" name="image" required class="form-control" id="imageInput">
+                                </div>
+
+                                <div class="col-12 mt-2">
+                                    <!-- Image Preview -->
+                                    <div class="text-center mb-4">
+                                        <img id="imagePreview" src="#" alt="Image Preview" class="img-fluid d-none"
+                                            style="max-height: 300px;">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-3">
+                                    <input type="text" name="caption" class="form-control" placeholder="Add a caption">
+                                </div>
+
+                                <div class="col-12 mt-3">
+                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("search-btn").addEventListener("click", function (event) {
+            event.preventDefault();
+            let searchBox = document.getElementById("search-box");
+            if (searchBox.style.display === "none" || searchBox.style.display === "") {
+                searchBox.style.display = "block";
+                document.getElementById("search-input").focus();
+            } else {
+                searchBox.style.display = "none";
+            }
+        });
+        
+        const searchInput = document.getElementById("search-input");
+        const suggestionsDropdown = document.getElementById("suggestions-dropdown");
+        let debounceTimer;
+        
+        searchInput.addEventListener("input", function() {
+            clearTimeout(debounceTimer);
+            
+            const query = this.value.trim();
+            
+            if (query.length < 1) {
+                suggestionsDropdown.style.display = "none";
+                suggestionsDropdown.innerHTML = "";
+                return;
+            }
+            
+            debounceTimer = setTimeout(() => {
+                fetch(`/suggest_users?q=${encodeURIComponent(query)}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        suggestionsDropdown.innerHTML = "";
+                        
+                        if (data.length === 0) {
+                            // Show "No user found" message when no results
+                            const noResults = document.createElement("div");
+                            noResults.className = "suggestion-item";
+                            noResults.innerHTML = "<span>No results found</span>";
+                            suggestionsDropdown.appendChild(noResults);
+                            suggestionsDropdown.style.display = "block";
+                            return;
+                        }
+                        
+                        data.forEach(user => {
+                            const item = document.createElement("div");
+                            item.className = "suggestion-item";
+                            item.innerHTML = `
+                                <img src="${user.profile_pic ? '/static/uploads/' + user.profile_pic : '/static/uploads/default-profile.png'}" 
+                                    alt="${user.username}" class="suggestion-pic">
+                                <span>${user.username}</span>
+                            `;
+                            
+                            item.addEventListener("click", function() {
+                                window.location.href = `/user/${user.username}`;
+                            });
+                            
+                            suggestionsDropdown.appendChild(item);
+                        });
+                        
+                        suggestionsDropdown.style.display = "block";
+                    })
+                    .catch(error => {
+                        console.error("Error fetching suggestions:", error);
+                        suggestionsDropdown.style.display = "none";
+                    });
+            }, 300); 
+        });
+        
+        document.addEventListener("click", function(event) {
+            if (!searchInput.contains(event.target) && !suggestionsDropdown.contains(event.target)) {
+                suggestionsDropdown.style.display = "none";
+            }
+        });
+        
+        searchInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                suggestionsDropdown.style.display = "none";
+                document.getElementById("search-form").submit();
+            }
+        });
+    
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        
+        if (imageInput && imagePreview) {
+            imageInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('d-none');
+                    }
+                    
+                    reader.readAsDataURL(this.files[0]);
+                } else {
+                    imagePreview.src = '#';
+                    imagePreview.classList.add('d-none');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

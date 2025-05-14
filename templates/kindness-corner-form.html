@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundraiser Donation Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo1.png') }}">
+    <style>
+        body {
+            background: url("../assets/kindness-corner/form-bg.jpg") no-repeat center center/cover;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 3, 3, 0.7);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1100px;
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .left-section {
+            background: #476c92;
+            padding: 60px;
+            text-align: justify;
+        }
+
+        .right-section {
+            padding: 40px;
+            overflow-y: auto;
+            max-height: 85vh;
+            background: #f9f9f9;
+            border-left: 5px solid #3e1103;
+        }
+
+        .left-section h2{
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .right-section {
+                max-height: 100vh;
+            }
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .btn-custom {
+            background-color: #ff5722;
+            color: white;
+            width: 100%;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .btn-custom:hover {
+            background-color: #d84315;
+        }
+
+        .section-title {
+            margin-top: 25px;
+            margin-bottom: 25px;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 3px solid #ff5722;
+            padding-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .right-section h2 {
+            color: #ff5722;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-label {
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+            let flashMessage = document.getElementById('flash-message');
+            if (flashMessage) {
+                flashMessage.style.display = 'none';
+            }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    <div class="container my-5 p-0 shadow-lg overflow-hidden">
+        <div class="row">
+            <!-- Left Section -->
+            <div class="col-md-5 d-none d-md-block text-white p-4 left-section">
+                <h2>Start a Fundraiser</h2>
+                <p>Is your organization in need of financial support to care for animals? Submit a donation request and
+                    reach generous donors willing to help.</p>
+                <p>Provide complete details about your fundraiser, including proof of need, the purpose of the funds,
+                    and a secure QR code for direct donations.</p>
+                <p><strong>Note:</strong> Once you submit the form, the admin will review and verify the details. Upon
+                    approval, your request will be listed on Kindness Corner, where donors can contribute to your cause.
+                </p>
+            </div>
+
+            <!-- Right Section -->
+            <div class="col-md-7 p-4 right-section">
+                <h2 class="text-center">Fundraiser Donation Form</h2>
+                <form id="donationForm" method="POST" action="{{ url_for('kindness_corner_form') }}"
+                    enctype="multipart/form-data">
+                    <h4 class="section-title">Fundraiser Details & Objectives</h4>
+                    <div class="mb-3">
+                        <label class="form-label">Title of Fundraiser</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Brief Description</label>
+                        <textarea class="form-control" rows="3" maxlength="200" name="brief_description"
+                            required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-control" name="end_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-block m-0">How the Funds Will Be Used?</label>
+                        <span style="font-size: 13px;"><i>(Breakdown – veterinary care, food, shelter, vaccinations,
+                                etc.)</i></span>
+                        <input type="text" class="form-control" name="fund_usage" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-block m-0">Who Will Benefit?</label>
+                        <span style="font-size: 13px;"><i>(Describe the pets that will be helped – rescued animals,
+                                abandoned pets, injured strays, etc.)</i></span>
+                        <input type="text" class="form-control" name="beneficiaries" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Estimated Number of Animals to Be Helped</label>
+                        <input type="number" class="form-control" name="animals_helped" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-block m-0">Previous Fundraising Efforts</label>
+                        <span style="font-size: 13px;"><i>(Have you conducted a similar initiative before? Yes/No – If
+                                yes, provide details and outcomes)</i></span>
+                        <input type="text" class="form-control" name="previous_efforts" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Emergency Contact Information</label>
+                        <input type="text" class="form-control" name="emergency_contact" required>
+                    </div>
+
+                    <h4 class="section-title">Supporting Documents & Media</h4>
+                    <div class="mb-3">
+                        <label class="form-label">Proof of Need Document</label>
+                        <input type="file" class="form-control" accept=".pdf, .jpg, .png" name="proof_document"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Donation QR Code</label>
+                        <input type="file" class="form-control" accept=".jpg, .png" name="donation_qr" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">UPI ID for Direct Donations</label>
+                        <input type="text" class="form-control" name="upi_id" required>
+                    </div>
+
+                    <h4 class="section-title">Additional Information & Social Proof</h4>
+                    <div class="mb-3">
+                        <label class="form-label">Message to Donors</label>
+                        <textarea class="form-control" rows="3" name="donor_message"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Social Media Handles</label>
+                        <input type="text" class="form-control" name="social_media">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Website or Fundraising Link</label>
+                        <input type="url" class="form-control" name="website">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-block m-0">Any Endorsements or Partnerships?</label>
+                        <span style="font-size: 13px;"><i>(List organizations, brands, or influencers supporting this
+                                fundraiser)</i></span>
+                        <input type="text" class="form-control" name="endorsements">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-block m-0">Volunteer or Community Involvement</label>
+                        <span style="font-size: 13px;"><i>(Are volunteers involved? If yes, provide details.)</i></span>
+                        <input type="text" class="form-control" name="volunteers">
+                    </div>
+
+
+                    <h4 class="section-title">Terms, Agreement & Submission</h4>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" required>
+                        <label class="form-check-label">I confirm that all information provided is accurate and that our
+                            organization complies with the platform's fundraising policies.</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" required>
+                        <label class="form-check-label">I understand that approval is subject to verification by the
+                            platform administrators. </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" required>
+                        <label class="form-check-label">I agree to provide updates on fund usage.</label>
+                    </div>
+                    <button type="submit" class="btn btn-custom mt-3">Submit Fundraiser</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get date inputs
+            const startDateInput = document.querySelector('input[name="start_date"]');
+            const endDateInput = document.querySelector('input[name="end_date"]');
+
+            // Set minimum date for start date (today)
+            const today = new Date();
+            const formattedToday = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            startDateInput.setAttribute('min', formattedToday);
+
+            // Update end date min value when start date changes
+            startDateInput.addEventListener('change', function () {
+                if (startDateInput.value) {
+                    endDateInput.setAttribute('min', startDateInput.value);
+
+                    // If end date is before start date, reset it
+                    if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                        endDateInput.value = startDateInput.value;
+                    }
+                }
+            });
+
+            // Validate form on submission
+            document.getElementById('donationForm').addEventListener('submit', function (event) {
+                // Check if start date is valid (not in past)
+                const startDate = new Date(startDateInput.value);
+                const currentDate = new Date();
+                currentDate.setHours(0, 0, 0, 0); // Reset time to beginning of day for fair comparison
+
+                if (startDate < currentDate) {
+                    event.preventDefault();
+                    alert('Start date cannot be in the past.');
+                    return false;
+                }
+
+                // Check if end date is after start date
+                const endDate = new Date(endDateInput.value);
+                if (endDate < startDate) {
+                    event.preventDefault();
+                    alert('End date must be after start date.');
+                    return false;
+                }
+
+                return true;
+            });
+        });
+    </script>
+</body>
+
+</html>

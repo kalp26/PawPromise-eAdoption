@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+/* Footer Section */
+.footer {
+    background: black;
+    padding: 20px 0px 0px 0px;
+    color: white;
+}
+
+.footer h5 {
+    font-size: 22px;
+    margin-left: 100px;
+}
+
+.footer p {
+    font-size: 17px;
+    text-align: justify;
+}
+
+.footer h5,
+.footer ul {
+    margin-left: 100px;
+}
+
+.footer ul {
+    display: block;
+    transition: max-height 0.3s ease;
+}
+
+.footer ul li {
+    font-size: 17px;
+    padding-bottom: 5px;
+    list-style: none;
+}
+
+.footer ul li a {
+    text-decoration: none;
+    color: white;
+}
+
+.footer ul li a i {
+    margin-right: 15px;
+    font-size: 25px;
+}
+
+.footer_menu .about_us {
+    width: 95%;
+    margin: auto;
+    border-bottom: 1px solid #6B7280;
+}
+
+.footer_menu .about_us h5 {
+    padding: 25px 0px 20px 0px;
+    margin-left: 0;
+}
+
+.footer_menu .quick,
+.footer_menu .features,
+.footer_menu .follow {
+    width: 95%;
+    margin: auto;
+    border-bottom: 1px solid #6B7280;
+}
+
+.footer_menu .quick h5,
+.footer_menu .features h5,
+.footer_menu .follow  h5 {
+    padding: 25px 0px 5px 0px;
+    margin-left: 0;
+}
+
+.footer_menu .quick i,
+.footer_menu .features i,
+.footer_menu .follow  i {
+    padding: 25px 0px 20px 0px;
+    font-size: x-large;
+}
+
+.footer_menu .submenu {
+    display: none;
+}

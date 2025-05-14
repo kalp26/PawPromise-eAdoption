@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawPromise e-Adoption</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/kindness-corner.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo1.png') }}">
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    <section class="site-section" id="donation-home">
+        <div class="container-fluid home">
+
+             {% include 'nav.html' %}
+
+            <div class="container">
+                <h1>Kindness Corner</h1>
+
+                <p class="mt-3">Kindness begins with you . Our donation helps provide food,<br>
+                    shelter, and medical aid to
+                    animals in need.<br> Join us in making a difference today.</p>
+
+                <div class="mt-3">
+                    <a href="/fundraisers" class="btn btn-banner d-flex align-items-center justify-content-center">Donate Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="site-section" id="donation-process">
+        <div class="container donat-process">
+            <h1 class="text-center">The Path to Support</h1>
+
+            <ol class="p-0 mx-auto">
+                <li>Verification - Only verified organizations can request donations.</li>
+                <li>Submit Request - Fill out the form with donation details, proof of need, a QR code for payment, and
+                    other required information.</li>
+                <li>Admin Review - The admin reviews the request and either approves or rejects it.</li>
+                <li>Listing & Donations - Approved requests are displayed on the Kindness Corner page, where donors can
+                    contribute. If a donor wishes to support a cause, they can scan the QR code displayed in the
+                    donation request for a secure transaction.</li>
+                <li>User Contribution - Visitors can explore donation requests, learn about different causes, and choose
+                    to contribute. They can make a donation by scanning the provided QR code, helping organizations
+                    provide better care for animals in need.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="site-section" id="donation-form">
+        <div class="container-fluid donat-form">
+            <div class="container">
+                <div class="row justify-content-between">
+                    <div class="col-lg-6 order-lg-1 order-2">
+                        <h2>Kickstart a Fundraiser</h2>
+                        <p>Are you a verified organization in need of support? Submit a fundraiser request by providing
+                            your cause details, proof of need, a secure QR code for donations, and other required
+                            information. Once approved, your campaign will be featured on Kindness Corner, allowing
+                            generous donors to contribute.</p>
+    
+                        {% if 'org_id' in session %}
+                            <a href="/kindness-corner-form" class="btn donat-form-btn">Begin Your Fundraiser</a>
+                        {% elif 'user_id' in session %}
+                            <button class="btn donat-form-btn" disabled title="Only organizations can create fundraisers">
+                                Begin Your Fundraiser (Organization Only)
+                            </button>
+                        {% else %}
+                            <a href="/login" class="btn donat-form-btn">Login as Organization to Begin</a>
+                        {% endif %}
+                    </div>
+    
+                    <div class="col-lg-6 order-lg-2 order-1">
+                        <img src="{{ url_for('static', filename='assets/kindness-corner/donation.png') }}" alt="Kindness Corner" class="d-block">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'footer.html' %}
+
+</body>
+
+</html>

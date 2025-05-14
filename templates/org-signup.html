@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawPromise-eAdoption</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/org-signup.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo1.png') }}">
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    <div class="container-fluid">
+        <div class="container">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col">
+                    <form method="POST" action="{{ url_for('org_signup') }}" onsubmit="return validateForm()">
+                        <div class="card my-4">
+                            <div class="row g-0 justify-content-between">
+                                <div class="d-none d-lg-block col-lg-6 d-flex align-content-center">
+                                    <img src="{{ url_for('static', filename='assets/Signup/Organization SignUp.png') }}"
+                                        alt="SignUp" class="img-fluid rounded-start">
+                                </div>
+                                <div class="col-lg-5">
+                                    <div class="card-body text-black d-flex flex-column justify-content-center">
+                                        <h3 class="mb-5 text-fw-bold text-center">Organization Sign Up</h3>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Organization Name:</label>
+                                            <input type="text" class="form-control" id="orgName" name="orgName"
+                                                required>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label class="form-label">Type Of Organization</label>
+                                            <select class="form-select" id="specialist" name="specialist" required>
+                                                <option value="shelter">Animal Shelter</option>
+                                                <option value="rescue">Rescue Organization</option>
+                                                <option value="ngo">NGO</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">State:</label>
+                                                <select class="form-select state" name="states" id="states">
+                                                    <option value="">Select a state</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">City:</label>
+                                                <select class="form-select city" id="cities" name="cities">
+                                                    <option value="">Select a city</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Phone Number:</label>
+                                            <input type="tel" maxlength="10" class="form-control" id="number"
+                                                name="number" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Email:</label>
+                                            <input type="email" class="form-control" id="email" name="email" required>
+
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Password:</label>
+                                            <input type="password" class="form-control" id="password" name="password"
+                                                required>
+                                        </div>
+
+                                        <div class="d-flex justify-content-end pt-3">
+                                            <button type="reset" class="btn w-100">Reset All</button>
+                                            <button type="submit" class="btn w-100 ms-2">Submit</button>
+                                        </div>
+
+                                        <!-- Replace your current OTP modal with this -->
+                                        <div id="otpModal" class="modal fade" tabindex="-1"
+                                            aria-labelledby="otpModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="otpModalLabel">Email Verification
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                            aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>We've sent a verification code to your email. Please enter
+                                                            the code below.</p>
+                                                        <div class="form-group mb-3">
+                                                            <label for="otpInput" class="form-label">Verification
+                                                                Code:</label>
+                                                            <input type="text" class="form-control" id="otpInput"
+                                                                placeholder="Enter the 6-digit code">
+                                                        </div>
+                                                        <div class="small text-muted">
+                                                            Didn't receive the code? Check your spam folder or click
+                                                            "Resend Code" below.
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary"
+                                                            onclick="resendOTP()">Resend Code</button>
+                                                        <button type="button" class="btn btn-primary"
+                                                            onclick="verifyOTP()">Verify</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let userData = {};
+        let otpVerified = false;
+
+        // When the page loads, set up event handlers
+        window.onload = function () {
+            console.log("Window loaded. Setting up handlers.");
+            loadStates();
+
+            // Remove the inline onsubmit attribute from the form
+            const form = document.querySelector("form");
+            form.removeAttribute("onsubmit");
+
+            // Add form submission handler
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+
+                // First validate the form 
+                if (!validateForm()) {
+                    console.log("Form validation failed");
+                    return false;
+                }
+
+                // If OTP is already verified, submit form normally
+                if (otpVerified) {
+                    console.log("OTP already verified, submitting form");
+                    form.submit();
+                    return true;
+                }
+
+                // Otherwise start OTP process
+                console.log("Starting OTP process");
+                handleOtpProcess();
+            });
+        };
+
+        // Validate form fields
+        function validateForm() {
+            // Check password format
+            var password = document.getElementById("password").value;
+            var passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                alert("Password must be at least 8 characters long, contain one capital letter, one small letter, one number, and one special character");
+                return false;
+            }
+            
+            // Check if email is valid
+            var email = document.getElementById("email").value;
+            var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(email)) {
+                alert("Invalid email address");
+                return false;
+            }
+        
+            // Check phone number
+            var phoneNumber = document.getElementById("number").value;
+            if (phoneNumber.length !== 10 || !/^\d+$/.test(phoneNumber)) {
+                alert("Please enter a valid 10-digit phone number");
+                return false;
+            }
+        
+            // Check if all required fields are filled
+            let isValid = true;
+            document.querySelectorAll("[required]").forEach((input) => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    input.focus();
+                    console.log("Invalid input found:", input.id);
+                    alert(`Please fill in the ${input.previousElementSibling.textContent.replace(':', '')}`);
+                }
+            });
+            return isValid;
+        }
+        
+        // Handle the OTP verification process
+        function handleOtpProcess() {
+            const email = document.getElementById("email").value;
+            
+            // First check if email already exists
+            fetch("/check_email", {
+                method: "POST",
+                body: JSON.stringify({ email: email }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    alert("This email is already registered. Please use a different email or try logging in.");
+                    return;
+                } else {
+                    // Email is available, proceed with OTP
+                    sendOTP(email);
+                }
+            })
+            .catch(error => {
+                console.error("Error checking email:", error);
+                alert("An error occurred while checking email availability. Please try again.");
+            });
+        }
+
+        // Send OTP to the provided email
+        function sendOTP(email) {
+            if (!email) {
+                alert("Please enter an email address");
+                return;
+            }
+
+            console.log("Sending OTP request for email:", email);
+            document.body.style.cursor = 'wait';
+
+            fetch("/send_otp", {
+                method: "POST",
+                body: JSON.stringify({ email: email }),
+                headers: { "Content-Type": "application/json" }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("OTP server response:", data);
+                    document.body.style.cursor = 'default';
+
+                    if (data.status === "success") {
+                        console.log("OTP sent successfully");
+                        showOTPModal();
+                    } else {
+                        alert("Error sending OTP: " + (data.message || "Unknown error"));
+                    }
+                })
+                .catch(error => {
+                    document.body.style.cursor = 'default';
+                    console.error("Error in OTP request:", error);
+                    alert("Failed to send OTP. Error: " + error.message);
+                });
+        }
+
+        // Display the OTP modal
+        function showOTPModal() {
+            const modalElement = document.getElementById("otpModal");
+            document.getElementById("otpInput").value = "";
+            const otpModal = new bootstrap.Modal(modalElement);
+            otpModal.show();
+        }
+
+        // Resend OTP
+        function resendOTP() {
+            const email = document.getElementById("email").value;
+            sendOTP(email);
+        }
+
+        // Verify the entered OTP
+        function verifyOTP() {
+            const otpValue = document.getElementById("otpInput").value.trim();
+            const email = document.getElementById("email").value;
+
+            if (!otpValue) {
+                alert("Please enter the OTP sent to your email");
+                return;
+            }
+
+            console.log("Verifying OTP:", otpValue);
+            document.body.style.cursor = 'wait';
+
+            fetch("/verify_otp", {
+                method: "POST",
+                body: JSON.stringify({
+                    otp: otpValue,
+                    email: email
+                }),
+                headers: { "Content-Type": "application/json" }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server returned ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("OTP verification response:", data);
+                    document.body.style.cursor = 'default';
+
+                    if (data.status === "verified") {
+                        // Hide the modal
+                        const modalElement = document.getElementById("otpModal");
+                        const otpModal = bootstrap.Modal.getInstance(modalElement);
+                        otpModal.hide();
+
+                        // Set verification flag
+                        otpVerified = true;
+
+                        alert("Email verified successfully! Submitting your registration...");
+
+                        // Submit the form
+                        document.querySelector("form").submit();
+                    } else {
+                        alert("Invalid OTP. Please try again.");
+                    }
+                })
+                .catch(error => {
+                    document.body.style.cursor = 'default';
+                    console.error("Error verifying OTP:", error);
+                    alert("Failed to verify OTP. Error: " + error.message);
+                });
+        }
+
+        // loading States & Cities Function Start
+        function loadStates() {
+            const config = {
+                cUrl: 'https://api.countrystatecity.in/v1/countries',
+                ckey: 'NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA=='
+            };
+
+            const stateSelect = document.querySelector('.state');
+            const citySelect = document.querySelector('.city');
+
+            const countryCode = 'IN';
+            stateSelect.innerHTML = '<option value="">Select State</option>';
+            citySelect.innerHTML = '<option value="">Select City</option>';
+
+            fetch(`${config.cUrl}/${countryCode}/states`, { headers: { "X-CSCAPI-KEY": config.ckey } })
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state.iso2;
+                        option.textContent = state.name;
+                        stateSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading states:', error));
+
+            // Add event listener for state change to load cities
+            stateSelect.addEventListener('change', loadCities);
+        }
+
+        function loadCities() {
+            const config = {
+                cUrl: 'https://api.countrystatecity.in/v1/countries',
+                ckey: 'NHhvOEcyWk50N2Vna3VFTE00bFp3MjFKR0ZEOUhkZlg4RTk1MlJlaA=='
+            };
+
+            const stateSelect = document.querySelector('.state');
+            const citySelect = document.querySelector('.city');
+
+            const countryCode = 'IN';
+            const stateCode = stateSelect.value;
+
+            if (!stateCode) {
+                citySelect.innerHTML = '<option value="">Select City</option>';
+                citySelect.disabled = true;
+                return;
+            }
+
+            citySelect.innerHTML = '<option value="">Select City</option>';
+            citySelect.disabled = false;
+
+            fetch(`${config.cUrl}/${countryCode}/states/${stateCode}/cities`, { headers: { "X-CSCAPI-KEY": config.ckey } })
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.name;
+                        option.textContent = city.name;
+                        citySelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading cities:', error));
+        }
+        // loading States & Cities Function Ends
+    </script>
+
+</body>
+
+</html>

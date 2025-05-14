@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Montserrat;
+}
+
+.profile {
+    background: url("../assets/profile-bg.jpg") no-repeat center center/cover;
+    height: 100vh;
+}
+
+.profile .shadow {
+    background-color: #b5b2b26e;
+    color: white;
+}
+
+.header {
+    padding: 10px 20px;
+}
+
+/* Verification Boxes */
+.verification-container {
+    background: #b5b2b26e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin: 40px 0px;
+    text-align: left;
+}
+
+.verification-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.verification-text {
+    font-size: 16px;
+    color: white;
+    margin-bottom: 12px;
+}
+
+/* Verified Section */
+.verified {
+    font-size: 16px;
+    font-weight: 600;
+    color: #28a745;
+    display: flex;
+    align-items: center;
+}
+
+.verified img {
+    width: 24px;
+    /* Small icon size */
+    height: 24px;
+    margin-right: 8px;
+}
+
+/* Under Review Section */
+.under-review {
+    font-size: 16px;
+    font-weight: 600;
+    color: #d39e00;
+    display: flex;
+    align-items: center;
+}
+
+.under-review img {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+}
+
+/* Rejected Section */
+.rejected {
+    font-size: 16px;
+    font-weight: 600;
+    color: #dc3545;
+    display: flex;
+    align-items: center;
+}
+
+.btn-verify {
+    background-color: #FF8A00;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 16px;
+    display: inline-block;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.btn-verify:hover {
+    background-color: #FF8A00;
+}

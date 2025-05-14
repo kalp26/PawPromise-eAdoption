@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PawPromise-eAdoption</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pet-meetup.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo1.png') }}">
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    <section class="site-section" id="pet-meetup-home">
+        <div class="container-fluid home">
+            {% include 'nav.html' %}
+
+            <h1 class="text-white d-flex justify-content-center mt-5">Pet MeetUp-Events</h1>
+        </div>
+    </section>
+
+    <section class="site-section d-none d-lg-block" id="pet-meetup-box">
+        <div class="background">
+            <div class="container box-section">
+                <div class="row justify-content-center">
+                    <div class="col-12 mb-5">
+                        <h1 class="text-center">Unleash the Fun: Socialize, Train & Explore</h1>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card card-1">
+                            <img src="{{ url_for('static', filename='assets/pet-meetup/feature1.png') }}" alt="Adoption">
+                            <h3 class="card-title">Pet Socialization</h3>
+                            <p class="card-text">Take part in organized events where your furry friend can make new buddies!
+                                Engage in interactive games, group activities, and social bonding sessions to help pets
+                                build confidence and enjoy playful moments.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card card-2">
+                            <img src="{{ url_for('static', filename='assets/pet-meetup/feature 2.png') }}" alt="Meetup">
+                            <h3 class="card-title">Training & Awareness</h3>
+                            <p class="card-text">From obedience drills to fun tricks, these workshops focus on positive
+                                reinforcement, behavior improvement, and pet well-being. Gain valuable insights from
+                                professionals and connect with fellow pet owners to share experiences.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card card-3">
+                            <img src="{{ url_for('static', filename='assets/pet-meetup/feature 3.png') }}" alt="Adventures">
+                            <h3 class="card-title">Adventure & Outdoor Walks</h3>
+                            <p class="card-text">Embark on exciting outdoor adventures with fellow pet lovers! Organized events include group
+                                hikes, nature walks, and park outings designed to keep your pet active, happy, and engaged
+                                with the world around them.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="site-section" id="pet-meetup-event">
+        <div class="container-fluid d-flex align-items-center justify-content-center event">
+            <div class="container text-center" style="position: relative; z-index: 1;">
+                <div class="row justify-content-center">
+                    <div class="col-12">
+                        <h1 class="display-4 mb-4">Pawfect Meetups</h1>
+
+                        <p class="lead mb-4">Where Tails Wag and Friends Meet</p>
+
+                        <div class="button-container">
+                            <a href="/past-event">
+                                <button class="btn btn-lg">Past Events</button>
+                            </a>
+                            <a href="/upcoming-event">
+                                <button class="btn btn-lg">Upcoming Events</button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="site-section" id="pet-meetup-theme" style="background: white;">
+        <div class="container-fluid mt-5">
+            <div class="container pb-0 theme">
+                <h1 class="text-center">Exciting Themes for Your Pet Meetup Event</h1>
+
+                <div class="text-center mt-5">
+                    <p>Here are some creative themes to consider:<br>
+                            🎃 Howl-o-ween Bash &nbsp; 🐾 Paw-shion Show &nbsp; 🎭 Costume Party &nbsp; 🌸 Spring Fling
+                         &nbsp; 🏖 Tropical Tails Beach Bash &nbsp; 🎈 Birthday Bash</p>
+
+                    <p><i>"No matter which theme you choose, your furry friends will have a tail-wagging good time!
+                            Stay tuned for our upcoming themed events!"</i></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid portfolio-grid">
+            <div class="portfolio-item" data-category="Tropical Tails Beach Bash">
+              <img src="{{ url_for('static', filename='assets/pet-meetup/Tropical Tails Beach Bash.jpg') }}" alt="Tropical Tails Beach Bash">
+              <div class="overlay">
+                <h3>Tropical Tails Beach Bash</h3>
+              </div>
+            </div>
+
+            <div class="portfolio-item" data-category="Howl-o-ween Bash">
+              <img src="{{ url_for('static', filename='assets/pet-meetup/Howl-o-ween Bash.jpg') }}" alt="Howl-o-ween Bash">
+              <div class="overlay">
+                <h3>Howl-o-ween Bash</h3>
+              </div>
+            </div>
+
+            <div class="portfolio-item" data-category="Paw-shion Show">
+              <img src="{{ url_for('static', filename='assets/pet-meetup/Paw-shion Show .jpg') }}" alt="Paw-shion Show">
+              <div class="overlay">
+                <h3>Paw-shion Show</h3>
+              </div>
+            </div>
+
+            <div class="portfolio-item" data-category="Costume Party">
+              <img src="{{ url_for('static', filename='assets/pet-meetup/Costume Party.jpg') }}" alt="Costume Party">
+              <div class="overlay">
+                <h3>Costume Party</h3>
+              </div>
+            </div>
+
+            <div class="portfolio-item" data-category="Paw-some Birthday Bash">
+              <img src="{{ url_for('static', filename='assets/pet-meetup/Paw-some Birthday Bash.jpg') }}" alt="Paw-some Birthday Bash">
+              <div class="overlay">
+                <h3>Paw-some Birthday Bash</h3>
+              </div>
+            </div>
+
+            <div class="portfolio-item" data-category="Spring Fling">
+              <img src="{{ url_for('static', filename='assets/pet-meetup/Spring Fling.jpg') }}" alt="Spring Fling">
+              <div class="overlay">
+                <h3>Spring Fling</h3>
+              </div>
+            </div>
+        </div>
+
+        <div id="imageModal" class="modal">
+            <span class="close">&times;</span>
+            <img class="modal-content" id="modalImage">
+        </div>
+    </section>
+
+    <section class="site-section" id="pet-meetup-FAQs">
+        <div class="container-fluid faq-section">
+            <div class="container text-center">
+                <h2 class="faq-title">Pet Meetup FAQs</h2>
+                <p class="faq-text">Get all the details about the pet meetup event, including participation rules,
+                    requirements, and tips to make the most of it!</p>
+
+                <div class="text-start mt-4">
+                    <div class="faq-item" onclick="toggleAnswer(this)">
+                        <div class="question">What is the Pet Meetup Event about? <span>+</span></div>
+                        <div class="answer"> <i class="bi bi-caret-right-fill"></i> The Pet Meetup Event is a fun gathering
+                            for pet owners, animal lovers, and their furry friends! It’s a great opportunity to socialize,
+                            learn from experts, and participate in exciting activities.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleAnswer(this)">
+                        <div class="question">Can I attend a pet meetup without a pet? <span>+</span></div>
+                        <div class="answer"> <i class="bi bi-caret-right-fill"></i> Yes! Even if you don’t have a pet,
+                            you are welcome to join. It’s a great way to learn more about different pets and meet fellow animal lovers.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleAnswer(this)">
+                        <div class="question">Do I need to bring vaccination records for my pet? <span>+</span></div>
+                        <div class="answer"> <i class="bi bi-caret-right-fill"></i> Yes, most pet meetups require that
+                            your pet is up to date on vaccinations to ensure the safety of all animals and attendees.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleAnswer(this)">
+                        <div class="question">What if my pet is aggressive or not socialized? <span>+</span></div>
+                        <div class="answer"> <i class="bi bi-caret-right-fill"></i> If your pet tends to be aggressive or
+                            anxious around other animals, it’s best to gradually introduce them to social settings before
+                            attending a meetup. You may also consider using a leash and muzzle if necessary.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleAnswer(this)">
+                        <div class="question">What should I do if another pet gets aggressive with mine? <span>+</span></div>
+                        <div class="answer"> <i class="bi bi-caret-right-fill"></i> Stay calm and separate the pets immediately.
+                            Inform the owner politely and, if needed, seek help from event staff to manage the situation.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleAnswer(this)">
+                        <div class="question">What should I bring to a pet meetup? <span>+</span></div>
+                        <div class="answer"> <i class="bi bi-caret-right-fill"></i> Bring essentials like a leash, water,
+                            waste bags, a pet ID tag, and any necessary medications. If it’s an outdoor event, consider
+                            bringing a portable water bowl and a blanket for your pet.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleAnswer(this)">
+                        <div class="question">if I lose my pet at the event? <span>+</span></div>
+                        <div class="answer"> <i class="bi bi-caret-right-fill"></i> Most meetups have a designated lost-and-found
+                            area. Ensure your pet wears an ID tag with your contact details, and immediately inform event
+                            organizers if your pet goes missing.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="addEventContainer">
+        <a href="{{ url_for('add_event') }}">
+            <button class="btn rounded-circle shadow-lg addEventBtn" id="addEventBtn">
+                <i class="bi bi-plus" style="font-size: 45px;"></i>
+            </button>
+        </a>
+        <span class="eventMessage">Add Your Event Detail</span>
+    </div>
+
+    {% include 'footer.html' %}
+    
+    <script>
+        function toggleAnswer(element) {
+            let answer = element.querySelector(".answer");
+            let icon = element.querySelector(".question span");
+            if (answer.style.display === "block") {
+                answer.style.display = "none";
+                icon.textContent = "+";
+            } else {
+                answer.style.display = "block";
+                icon.textContent = "-";
+            }
+        }
+
+        document.getElementById("addEventBtn").addEventListener("click", function () {
+            window.location.href = "/add_event";
+        });
+
+        window.addEventListener("scroll", function () {
+            const navbar = document.getElementById("mynav");
+            if (window.scrollY > 350) {
+                navbar.classList.add("visible");
+            } else {
+                navbar.classList.remove("visible");
+            }
+        });
+
+        // Get the modal and modal image elements
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeBtn = document.querySelector('.close');
+
+        // Function to open the modal with the clicked image
+        document.querySelectorAll('.portfolio-item img').forEach(img => {
+          img.addEventListener('click', () => {
+            modal.style.display = 'block';
+            modalImg.src = img.src;
+            modalImg.style.maxWidth = 'none';
+            modalImg.style.maxHeight = 'none';
+          });
+        });
+
+        // Close the modal when clicking the close button
+        closeBtn.addEventListener('click', () => {
+          modal.style.display = 'none';
+        });
+
+        // Close the modal when clicking outside the image
+        window.addEventListener('click', (event) => {
+          if (event.target === modal) {
+            modal.style.display = 'none';
+          }
+        });
+
+        // Close the modal when pressing the "Esc" key
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') {
+            modal.style.display = 'none';
+          }
+        });
+    </script>
+
+
+</body>
+
+</html>

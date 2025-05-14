@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ meetup[1] }} - Participants</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo1.png') }}">
+    <style>
+        body {
+            background-color: #000;
+            color: white;
+        }
+    
+        .container {
+            padding: 20px;
+        }
+
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            background-color: #222;
+            color: white;
+        }
+
+        .card-header {
+            background-color: #FF8A00;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.2s;
+        }
+
+        .participant-item:last-child {
+            border-bottom: none;
+        }
+
+        .participant-item:hover {
+            background-color: #333;
+        }
+
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid #FF8A00;
+        }
+
+        .participant-info {
+            flex-grow: 1;
+        }
+
+        .participant-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .participant-joined {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        .btn-primary {
+            background-color: #FF8A00;
+            border-color: #FF8A00;
+        }
+    
+        .btn-primary:hover {
+            background-color: #e57800;
+            border-color: #e57800;
+        }
+    
+        .btn-outline-secondary {
+            border-color: #FF8A00;
+            color: #FF8A00;
+        }
+    
+        .btn-outline-secondary:hover {
+            background-color: #FF8A00;
+            color: white;
+        }
+
+        .meetup-info {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .meetup-title {
+            color: #FF8A00;
+            margin-bottom: 10px;
+        }
+
+        .no-participants {
+            text-align: center;
+            padding: 30px 0;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    {% include 'nav.html' %}
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>{{ meetup[1] }} - Participants</h2>
+            <a href="{{ back_url }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Meetup
+            </a>
+        </div>
+
+        <div class="meetup-info">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4 class="meetup-title">Event Details</h4>
+                    <p><strong>Date:</strong> {{ meetup[4] }}</p>
+                    <p><strong>Location:</strong> {{ meetup[7] }}</p>
+                    <p><strong>Type:</strong> {{ meetup[2] }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h4 class="meetup-title">Organizer</h4>
+                    <p><strong>Name:</strong> {{ meetup[13] }}</p>
+                    <p><strong>Contact:</strong> {{ meetup[15] }}/{{ meetup[16] }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Participants ({{ participants|length }}/{{ meetup[11] }})</span>
+                
+                {% if is_creator %}
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-download me-1"></i> Export
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="exportDropdown">
+                        <li><a class="dropdown-item" href="/event/{{ meetup[0] }}/participants/export?format=csv">
+                            <i class="fas fa-file-csv me-1"></i> CSV
+                        </a></li>
+                        <li><a class="dropdown-item" href="/event/{{ meetup[0] }}/participants/export?format=pdf">
+                            <i class="fas fa-file-pdf me-1"></i> PDF
+                        </a></li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                {% if participants %}
+                    {% for participant in participants %}
+                    <div class="participant-item">
+                        <div class="participant-info">
+                            <div class="participant-name">Name: {{ participant.name }}</div>
+                            <div class="participant-email">Number: {{ participant.phone }}</div>
+                            <div class="participant-joined">Joined at: {{ participant.joined_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="no-participants">
+                    <i class="fas fa-users fa-3x mb-3"></i>
+                    <h5>No participants yet</h5>
+                    <p>Be the first to join this meetup!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Improve back button behavior for the participants page
+            $('a[href="{{ back_url }}"]').on('click', function(e) {
+                e.preventDefault();
+                const backUrl = $(this).attr('href');
+                
+                // Check if we have a stored URL for the previous page
+                const storedMeetupUrl = sessionStorage.getItem('meetupDetailsUrl');
+                
+                if (storedMeetupUrl) {
+                    // Clear the stored URL
+                    sessionStorage.removeItem('meetupDetailsUrl');
+                    
+                    // Replace the current history entry instead of adding a new one
+                    window.location.replace(storedMeetupUrl);
+                } else {
+                    // If no stored URL, just go back to the provided URL
+                    window.location.replace(backUrl);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

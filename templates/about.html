@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawPromise-eAdoption</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo1.png') }}">
+</head>
+
+<body>
+    <!-- Flash Message Display -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    <section class="site-section" id="about-home">
+        <div class="container-fluid home">
+
+            {% include 'nav.html' %}
+
+            <div class="container">
+                <h2>About</h2>
+                <p class="mb-1 mt-2">Helping Pets Find Their Forever Families</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="site-section" id="about-who">
+        <div class="container who">
+            <h1 class="text-center">Who We Are?</h1>
+
+            <ol class="p-0 mx-auto">
+                <li>We are PawPromise-eAdoption, a heartwarming platform dedicated to connecting pets with loving
+                    homes. We simplify the adoption process by verifying sellers and matching pets with adopters.</li>
+                <li>Beyond adoption, we foster a supportive pet-loving community where users can share adoption
+                    stories, seek expert pet care guidance, participate in Q&A discussions, and even join fun pet
+                    meetups.
+                    With secure processing, interactive features, and valuable resources, we ensure a smooth and joyful
+                    experience for both pets and their new families.</li>
+                <li>At PawPromise-eAdoption, we believe every pet deserves a caring home, and we strive to make that
+                    connection effortless and meaningful.</li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="site-section" id="about-service">
+        <div class="container-fluid service">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 heading mb-3" style="position: relative;">
+                        <h2>Our Services</h2>
+                        <p>We provide a variety of services to make pet adoption simple, secure, and enjoyable.</p>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6 col-sm-12 my-md-5 my-sm-3">
+                        <div class="d-flex flex-column align-items-center info">
+                            <img src="{{ url_for('static', filename='assets/about/SP1-Photoroom.png') }}"
+                                alt="Seamless Pet Adoption">
+                            <h5>Seamless Pet Adoption</h5>
+                            <p>Browse available pets and complete the adoption process with ease.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-12 my-md-5 my-sm-3">
+                        <div class="d-flex flex-column align-items-center info">
+                            <img src="{{ url_for('static', filename='assets/about/SP2-Photoroom.png') }}"
+                                alt="Pet Care Resources & Guidance">
+                            <h5>Pet Care Resources & Guidance</h5>
+                            <p>Access expert advice on pet care, training to ensure a happy life for your
+                                new companion.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-12 my-md-5 my-sm-3">
+                        <div class="d-flex flex-column align-items-center info">
+                            <img src="{{ url_for('static', filename='assets/about/SP3-Photoroom.png') }}"
+                                alt="Community Query Platform">
+                            <h5>Community Query Platform</h5>
+                            <p>Ask questions, share advice, and learn from experienced pet owners.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-12 my-sm-3">
+                        <div class="d-flex flex-column align-items-center info">
+                            <img src="{{ url_for('static', filename='assets/about/SP4-Photoroom.png') }}"
+                                alt=">Kindness Corner">
+                            <h5>Kindness Corner</h5>
+                            <p>Support pets in need through secure and hassle-free donations.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-12 my-sm-3">
+                        <div class="d-flex flex-column align-items-center info">
+                            <img src="{{ url_for('static', filename='assets/about/SP5-Photoroom.png') }}"
+                                alt="Pet Meetup Events">
+                            <h5>Pet Meetup Events</h5>
+                            <p>Join or organize fun events to connect with fellow pet lovers.</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        <div class="d-flex flex-column align-items-center info">
+                            <img src="{{ url_for('static', filename='assets/about/SP6-Photoroom.png') }}"
+                                alt="Seamless Pet Adoption Process">
+                            <h5>Share Your Pet’s Adventures</h5>
+                            <p>Post and explore heartwarming pet activity stories, milestones, and fun moments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="site-section" id="about-team">
+        <div class="container-fluid team">
+            <div class="container">
+                <div class="heading" style="position: relative;">
+                    <h2 class="text-center">Meet Our Team</h2>
+                    <p>We have a team that takes care of pets, helps them find new families, and provides care.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="team-member">
+                            <img src="{{ url_for('static', filename='assets/about/client1.jpg') }}" alt="Team Member 1">
+                            <h5>Sneha Iyer</h5>
+                            <p class="text-center">Founder & CEO</p>
+                            <p>Passionate about animal welfare and dedicated to making pet adoption easier, Sneha Iyer
+                                founded PawPromise-eAdoption with the vision of connecting pets with loving homes. With
+                                a background in animal care, they ensure that the platform serves both adopters and
+                                organizations seamlessly.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="team-member">
+                            <img src="{{ url_for('static', filename='assets/about/client2.jpg') }}" alt="Team Member 2">
+                            <h5>Rohan Verma</h5>
+                            <p class="text-center">Adoption Coordinator</p>
+                            <p>With a deep love for animals and years of experience in pet adoption services, Rohan Verma
+                                plays a crucial role in verifying adopters and assisting shelters. Their goal is to
+                                ensure every pet finds the perfect forever home while guiding adopters through the
+                                process with care and expertise.</p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="team-member">
+                            <img src="{{ url_for('static', filename='assets/about/client3.jpg') }}" alt="Team Member 3">
+                            <h5>Aditi Mehra</h5>
+                            <p class="text-center">Community Manager & Customer Support</p>
+                            <p>Ensuring a seamless experience for users, Aditi Mehra oversees the Community Query Platform
+                                and provides top-notch customer support. They assist adopters, pet organizations, and
+                                users with queries, offering guidance and resolving concerns.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'footer.html' %}
+
+
+</body>
+
+</html>

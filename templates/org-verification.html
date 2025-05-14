@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Organization Verification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 40px 0;
+            background: url("../assets/kindness-corner/form-bg.jpg") no-repeat center center/cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .container {
+            position: relative;
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #004aad;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+
+        h4 {
+            color: #333;
+            font-size: 18px;
+            font-weight: bold;
+            border-bottom: 2px solid #004aad;
+            padding-bottom: 6px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 15px;
+            color: #333;
+        }
+
+        .form-control {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            font-size: 14px;
+            margin-bottom: 20px;
+            background: white;
+        }
+
+        .form-control::placeholder {
+            font-size: 13px;
+            color: gray;
+        }
+
+        .btn-primary {
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            background: linear-gradient(to right, #004aad, #4364F7);
+            border: none;
+            border-radius: 6px;
+            transition: 0.3s ease-in-out;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, #4364F7, #6FB1FC);
+        }
+    </style>
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <h2>Pet Organization Verification</h2>
+        <form action="/submit_org_verification" method="POST" enctype="multipart/form-data" id="verification-form">
+            <h4>Organization Details</h4>
+            <div>
+                <label class="form-label" for="org_name">Organization Name:</label>
+                <input type="text" class="form-control" id="org_name" name="org_name"
+                    placeholder="Enter Organization Name" required>
+            </div>
+            <div>
+                <label class="form-label" for="phone">Phone Number:</label>
+                <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter Phone Number"
+                    required>
+            </div>
+            <div>
+                <label class="form-label" for="website">Website (Optional):</label>
+                <input type="url" class="form-control" id="website" name="website" placeholder="Enter Website URL">
+            </div>
+            <div>
+                <label class="form-label" for="social_media">Social Media Page (Optional):</label>
+                <input type="url" class="form-control" id="social_media" name="social_media"
+                    placeholder="Enter Social Media Link">
+            </div>
+            <div>
+                <label class="form-label" for="address">Full Address:</label>
+                <textarea class="form-control" id="address" name="address" rows="2" placeholder="Enter Full Address"
+                    required></textarea>
+            </div>
+            <br>
+            <!-- Legal Information -->
+            <h4>Legal Information</h4>
+            <div>
+                <label class="form-label" for="reg_number">Registration Number:</label>
+                <input type="text" class="form-control" id="reg_number" name="reg_number"
+                    placeholder="Enter Registration Number" required>
+            </div>
+            <div>
+                <label class="form-label" for="years_operation">Years in Operation:</label>
+                <input type="number" class="form-control" id="years_operation" name="years_operation"
+                    placeholder="Enter Number of Years" required>
+            </div>
+            <div>
+                <label class="form-label" for="org_type">Organization Type:</label>
+                <select class="form-control" id="org_type" name="org_type" required>
+                    <option value="" disabled selected>Select Organization Type</option>
+                    <option value="Non-Profit">Non-Profit</option>
+                    <option value="Charity">Charity</option>
+                    <option value="Rescue Shelter">Rescue Shelter</option>
+                    <option value="Animal Welfare NGO">Animal Welfare NGO</option>
+                    <option value="Pet Adoption Center">Pet Adoption Center</option>
+                    <option value="Foster Network">Foster Network</option>
+                    <option value="Animal Rehabilitation Center">Animal Rehabilitation Center</option>
+                    <option value="Wildlife Rescue">Wildlife Rescue</option>
+                </select>
+            </div>
+            <br>
+            <!-- Additional Information -->
+            <h4>Additional Information</h4>
+            <div>
+                <label class="form-label" for="emergency_contact">Emergency Contact Number:</label>
+                <input type="tel" class="form-control" id="emergency_contact" name="emergency_contact"
+                    placeholder="Enter Emergency Contact" required>
+            </div>
+            <br>
+            <!-- File Uploads -->
+            <h4>Upload Documents</h4>
+            <div>
+                <label class="form-label" for="reg_certificate">Registration Certificate:</label>
+                <input type="file" class="form-control" id="reg_certificate" name="reg_certificate"
+                    accept="image/*,application/pdf" required>
+            </div>
+            <div>
+                <label class="form-label" for="tax_certificate">Tax Exemption Certificate (if applicable):</label>
+                <input type="file" class="form-control" id="tax_certificate" name="tax_certificate"
+                    accept="image/*,application/pdf">
+            </div>
+            <br>
+            <!-- Representative Information -->
+            <h4>Representative Details</h4>
+            <div>
+                <label class="form-label" for="rep_name">Owner/Representative Full Name:</label>
+                <input type="text" class="form-control" id="rep_name" name="rep_name"
+                    placeholder="Enter Representative Name" required>
+            </div>
+            <div>
+                <label class="form-label" for="rep_id">Owner/Representative ID Proof:</label>
+                <input type="file" class="form-control" id="rep_id" name="rep_id" accept="image/*,application/pdf"
+                    required>
+            </div>
+            <br>
+            <!-- Mission Statement -->
+            <h4>Mission Statement</h4>
+            <div>
+                <label class="form-label" for="mission">Mission Statement (Brief):</label>
+                <textarea class="form-control" id="mission" name="mission" rows="3"
+                    placeholder="Enter Mission Statement" required></textarea>
+            </div>
+            <br>
+            <!-- Submit Button -->
+            <button type="submit" id="submit" class="btn btn-primary">Submit Verification</button>
+        </form>
+
+    </div>
+
+</body>
+
+</html>

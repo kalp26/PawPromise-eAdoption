@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meetup Details</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo1.png') }}">
+    <style>
+        body {
+            background-color: #000;
+            color: white;
+        }
+    
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+            margin-bottom: 20px;
+            background-color: #222;
+        }
+    
+        .meetup-image-container {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+    
+        .meetup-image-main {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+    
+        .details-section {
+            background-color: #111;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(255, 138, 0, 0.2);
+        }
+    
+        .section-title {
+            border-bottom: 1px solid #FF8A00;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #FF8A00;
+            font-weight: 600;
+        }
+    
+        .detail-row {
+            margin-bottom: 12px;
+        }
+    
+        .detail-label {
+            font-weight: 600;
+            color: white;
+            width: 140px;
+            display: inline-block;
+        }
+    
+        .badge {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-right: 5px;
+            background-color: #FF8A00;
+            color: white;
+        }
+    
+        .document-link {
+            display: inline-flex;
+            align-items: center;
+            background-color: #1a1a1a;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+            border: 1px solid #FF8A00;
+            text-decoration: none;
+            color: white;
+        }
+    
+        .document-link:hover {
+            background-color: #2a2a2a;
+            box-shadow: 0 2px 5px rgba(255, 138, 0, 0.4);
+        }
+    
+        .document-icon {
+            margin-right: 10px;
+            font-size: 20px;
+            color: #FF8A00;
+        }
+    
+        .top-controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    
+        .toast {
+            background-color: #111;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(255,138,0,0.3);
+            color: white;
+        }
+    
+        .organizer-section {
+            padding: 15px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #FF8A00;
+            margin-top: 15px;
+        }
+    
+        .event-feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+    
+        .feature-icon {
+            color: #FF8A00;
+            font-size: 18px;
+            margin-right: 10px;
+            width: 25px;
+            text-align: center;
+        }
+    
+        .maps-container {
+            height: 200px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 1px solid #FF8A00;
+        }
+    
+        .maps-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FF8A00;
+            font-style: italic;
+        }
+
+        .btn-outline-secondary {
+            border-color: #FF8A00;
+            color: #FF8A00;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #FF8A00;
+            color: #000;
+        }
+        
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .past-event-badge {
+            background-color: #6c757d;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    {% include 'nav.html' %}
+
+    <div class="container">
+        <div class="top-controls">
+            <h2>Meetup Details</h2>
+            <div>
+                <a href="{{ back_url }}" class="btn btn-outline-secondary me-2" id="back-btn">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Meetups
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-5">
+                <div class="meetup-image-container">
+                    {% if meetup.event_poster %}
+                    <img src="/static/uploads/{{ meetup.event_poster }}" alt="{{ meetup.event_name }}" class="meetup-image-main">
+                    {% else %}
+                        <img src="/static/img/default-event.jpg" alt="Default Event" class="meetup-image-main">
+                    {% endif %}
+                </div>
+                
+                <div class="details-section">
+                    <h4 class="section-title">Event Location</h4>
+                    
+                    <div class="event-feature">
+                        {% if meetup.google_maps_link %}
+                                <a href="{{ meetup.google_maps_link }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-map-marker-alt me-1"></i> View Map
+                                </a>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="event-feature">
+                        <i class="fas fa-map-marker-alt feature-icon"></i>
+                        <div>{{ meetup.event_location }}</div>
+                    </div>
+                    
+                    {% if meetup.address %}
+                        <div class="event-feature">
+                            <i class="fas fa-home feature-icon"></i>
+                            <div>{{ meetup.address }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if meetup.sponsors or meetup.rules %}
+                <div class="details-section">
+                    {% if meetup.sponsors %}
+                        <h4 class="section-title">Sponsors</h4>
+                        <p>{{ meetup.sponsors }}</p>
+                    {% endif %}
+                    
+                    {% if meetup.rules %}
+                        <h4 class="section-title">Event Rules</h4>
+                        <p>{{ meetup.rules }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Action Buttons Section -->
+                <div class="details-section">
+                    <h4 class="section-title">Actions</h4>
+                    
+                    <div class="action-buttons">
+                        <!-- Show participants button for event creators -->
+                        {% if (session.get('user_id') and session.get('user_id') == meetup.organizer_id and meetup.user_type == 'user') or 
+                            (session.get('org_id') and session.get('org_id') == meetup.organizer_id and meetup.user_type == 'organization') %}
+                            <a href="/event/{{meetup.id}}/participants" class="btn btn-info">
+                                <i class="fas fa-users me-1"></i> View Participants
+                            </a>
+                        {% endif %}
+                        
+                        <!-- Join/Unjoin buttons only if NOT a past event -->
+                        {% if not is_past_event %}
+                            {% if session.get('user_id') %}
+                                {% if session.get('user_id') == meetup.organizer_id %}
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-user-check me-1"></i> Your Event
+                                    </button>
+                                {% else %}
+                                    <button id="join-button" class="btn btn-primary join-meetup-btn" data-meetup-id="{{ meetup.id }}">
+                                        <i class="fas fa-user-plus me-1"></i> Join Event
+                                    </button>
+                                {% endif %}
+                            {% elif session.get('org_id') %}
+                                <button class="btn btn-secondary" disabled title="Only users can join meetups">
+                                    <i class="fas fa-ban me-1"></i> Organizations Cannot Join
+                                </button>
+                            {% else %}
+                                <a href="/signin" class="btn btn-warning">
+                                    <i class="fas fa-sign-in-alt me-1"></i> Sign In to Join
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <span class="past-event-badge">
+                                <i class="fas fa-calendar-times me-1"></i> This event has already taken place
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="col-lg-7">
+                <div class="details-section">
+                    <h3>{{ meetup.event_name }}</h3>
+                    <div class="mb-3">
+                        <span class="badge bg-success">{{ meetup.event_type }}</span>
+                        <span class="badge bg-secondary">{{ meetup.allowed_pet_types }}</span>
+                        {% if is_past_event %}
+                            <span class="badge bg-dark">Past Event</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h4 class="section-title">Event Information</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-row">
+                                <span class="detail-label">Date & Time:</span> {{ meetup.event_datetime.strftime('%Y-%m-%d %H:%M') }}
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Duration:</span> {{ meetup.event_duration }} hours
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Pet Limit:</span> {{ meetup.pet_limit }} per person
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-row">
+                                <span class="detail-label">Max Participants:</span> {{ meetup.max_participants }} people
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Created By:</span> {{ meetup.organizer_name }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="section-title mt-4">Event Description</h4>
+                    <p>{{ meetup.event_description }}</p>
+                    
+                    <div class="organizer-section">
+                        <h5 style="color: #FF8A00;"><i class="fas fa-user me-2"></i>Organizer Information</h5>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="detail-row">
+                                    <span class="detail-label">Name:</span> {{ meetup.organizer_name }}
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Type:</span> {{ meetup.organizer_type }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-row">
+                                    <span class="detail-label">Email:</span> {{ meetup.email }}
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Phone:</span> {{ meetup.phone }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast notifications container -->
+    <div class="toast-container">
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Status updated successfully.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Function to show toast notification
+            function showToast(title, message, type) {
+                $('#toast-title').text(title);
+                $('#toast-message').text(message);
+                
+                // Set toast background color based on type
+                const toast = $('.toast');
+                toast.removeClass('bg-success bg-danger bg-warning');
+                
+                if (type === 'success') {
+                    toast.addClass('bg-success text-white');
+                } else if (type === 'error') {
+                    toast.addClass('bg-danger text-white');
+                } else if (type === 'warning') {
+                    toast.addClass('bg-warning');
+                }
+                
+                // Show the toast
+                const bsToast = new bootstrap.Toast($('.toast'));
+                bsToast.show();
+            }
+            
+            // Check if the user has already joined this meetup
+            function checkJoinStatus() {
+                // Only run this check if the join button exists
+                if ($('#join-button').length > 0) {
+                    const meetupId = $('#join-button').data('meetup-id');
+                    
+                    $.ajax({
+                        url: '/check-join-status/' + meetupId,
+                        type: 'GET',
+                        success: function(response) {
+                            if (response.joined) {
+                                // User has already joined, update button
+                                $('#join-button')
+                                    .removeClass('btn-primary join-meetup-btn')
+                                    .addClass('btn-success unjoin-meetup-btn')
+                                    .html('<i class="fas fa-check me-1"></i> Joined');
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Call the function when page loads
+            checkJoinStatus();
+            
+            // Join event handler with event delegation
+            $(document).on('click', '.join-meetup-btn', function() {
+                const meetupId = $(this).data('meetup-id');
+                const button = $(this);
+                
+                // Disable button to prevent multiple clicks
+                button.prop('disabled', true);
+                
+                $.ajax({
+                    url: '/meetup/join/' + meetupId,
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            button.removeClass('btn-primary join-meetup-btn')
+                                  .addClass('btn-success unjoin-meetup-btn')
+                                  .html('<i class="fas fa-check me-1"></i> Joined');
+                            
+                            // Make sure the button is still enabled
+                            button.prop('disabled', false);
+                            
+                            showToast('Success', response.message, 'success');
+                        } else {
+                            showToast('Error', response.message, 'error');
+                            button.prop('disabled', false);
+                        }
+                    },
+                    error: function() {
+                        showToast('Error', 'Failed to join the event. Please try again.', 'error');
+                        button.prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Unjoin event handler with event delegation
+            $(document).on('click', '.unjoin-meetup-btn', function() {
+                const meetupId = $(this).data('meetup-id');
+                const button = $(this);
+                
+                // Disable button to prevent multiple clicks
+                button.prop('disabled', true);
+                
+                $.ajax({
+                    url: '/meetup/unjoin/' + meetupId,
+                    type: 'POST',
+                    success: function(response) {
+                        if (response.success) {
+                            button.removeClass('btn-success unjoin-meetup-btn')
+                                  .addClass('btn-primary join-meetup-btn')
+                                  .html('<i class="fas fa-user-plus me-1"></i> Join Event');
+                            
+                            // Make sure the button is still enabled
+                            button.prop('disabled', false);
+                            
+                            showToast('Success', response.message, 'success');
+                        } else {
+                            showToast('Error', response.message, 'error');
+                            button.prop('disabled', false);
+                        }
+                    },
+                    error: function() {
+                        showToast('Error', 'Failed to leave the event. Please try again.', 'error');
+                        button.prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Improve back button behavior
+            $('#back-btn').on('click', function(e) {
+                e.preventDefault();
+                const storedBackUrl = sessionStorage.getItem('previousPageUrl');
+                const backUrl = storedBackUrl || $(this).attr('href');
+                
+                // Clear the stored URL
+                sessionStorage.removeItem('previousPageUrl');
+                
+                // Replace the current history entry instead of adding a new one
+                window.location.replace(backUrl);
+            });
+        });
+    </script>
+</body>
+</html>

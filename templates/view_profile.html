@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user_data.username }} - PawPromise-eAdoption</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Sys-profile.css') }}">
+    <style>
+        .sidebar .search-box {
+            width: 100%;
+            padding: 10px;
+            display: none;
+        }
+
+        .sidebar .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .sidebar .search-box input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        
+        .post-img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .post-img:hover {
+            transform: scale(1.02);
+        }
+        
+        #suggestions-dropdown {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .suggestion-pic {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        /* Styles for post modal */
+        .comments-section {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        
+        .comment {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .comment small {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    
+    {% include 'nav1.html' %}
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <a class="navbar-brand d-flex flex-column" href="/Share-your-story">
+            <img src="{{ url_for('static', filename='assets/Features/Share Your Story2.png') }}" alt="Share Your Story">
+            <span>Share Your Story</span>
+        </a>
+        <ul class="navbar-nav mt-4">
+            <li class="nav-item"><a class="nav-link" href="/Share-your-story"><i class="fa-solid fa-house"></i>
+                    <span>Feed</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#" id="search-btn"><i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span></a></li>
+            <div class="search-box" id="search-box">
+                <form action="/search" method="GET" id="search-form">
+                    <input type="text" class="form-control" placeholder="Search users..." name="q" id="search-input" value="{{ query }}" autocomplete="off">
+                    <div id="suggestions-dropdown"></div>
+                </form>
+            </div>
+            <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#upload_post">
+                    <i class="fa-solid fa-square-plus"></i> <span>New Post</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="/Sys-profile"><i class="fa-regular fa-user"></i>
+                    <span>Profile</span></a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="container">
+            <div class="row justify-content-between">
+                <div class="col-2 user-img">
+                    <img src="{{ url_for('static', filename='uploads/' + (user_data.profile_pic if user_data.profile_pic else 'default.jpg')) }}" 
+                    class="profile-img" 
+                    id="displayProfileImage"
+                    onerror="this.onerror=null; this.src='{{ url_for('static', filename='uploads/default.jpg') }}'">
+                </div>
+
+                <div class="col-9">
+                    <div class="user-info d-flex">
+                        <h2 id="displayUsername">{{ user_data.username }}</h2>
+
+                        {% if is_own_profile %}
+                        <div class="dropdown">
+                            <a class="btn" href="#" role="button" id="infomenu" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots"></i>
+                            </a>
+
+                            <ul class="dropdown-menu" aria-labelledby="infomenu">
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                        data-bs-target="#editProfileModal">Edit Profile</a></li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="user-slogan p-0 m-0">
+                        <p>{{ user_data.slogan }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="text-black">
+
+            <div class="container">
+                {% if posts %}
+                <div class="row" id="imageContainer">
+                    {% for image in posts %}
+                    <div class="col-md-4 mb-3 d-flex justify-content-center">
+                        <div class="position-relative w-100">
+                            <img src="{{ url_for('static', filename='uploads/' + image.image) }}" 
+                                alt="User Post" 
+                                class="img-fluid rounded post-img" 
+                                data-post-id="{{ image.id }}"
+                                data-caption="{{ image.caption }}"
+                                data-formatted-date="{{ image.time_ago }}"
+                                style="cursor: pointer; max-height: 300px; object-fit: cover;">
+                            <small class="position-absolute bottom-0 start-0 bg-dark bg-opacity-50 text-white px-2 py-1 rounded-bottom">
+                                {{ image.time_ago }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center text-black">No posts available.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Post Modal -->
+    <div class="modal fade" id="upload_post" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" class="mb-4">
+                        <div class="input-group">
+                            <div class="row">
+                                <div class="col-12 mt-2">
+                                    <input type="file" name="image" required class="form-control" id="imageInput">
+                                </div>
+
+                                <div class="col-12 mt-2">
+                                    <!-- Image Preview -->
+                                    <div class="text-center mb-4">
+                                        <img id="imagePreview" src="#" alt="Image Preview" class="img-fluid d-none"
+                                            style="max-height: 300px;">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-3">
+                                    <input type="text" name="caption" class="form-control" placeholder="Add a caption">
+                                </div>
+
+                                <div class="col-12 mt-3">
+                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Post View Modal -->
+    <div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="postModalLabel">Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Image Section -->
+                        <div class="col-md-7">
+                            <img id="modalPostImage" src="" alt="Post" class="img-fluid rounded">
+                        </div>
+                        
+                        <!-- Content Section -->
+                        <div class="col-md-5">
+                            <!-- Post Info -->
+                            <div class="d-flex align-items-center mb-3">
+                                <img id="modalProfilePic" src="" alt="Profile" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                <h6 id="modalUsername" class="mb-0"></h6>
+                            </div>
+                            
+                            <!-- Caption -->
+                            <p id="modalCaption" class="mb-3"></p>
+                            <small id="modalPostDate" class="text-muted d-block mb-3"></small>
+                            
+                            <hr>
+                            
+                            <!-- Actions -->
+                            <div class="d-flex justify-content-between mb-3">
+                                <div>
+                                    <button class="btn btn-sm" id="likeButton">
+                                        <i class="bi bi-heart"></i> <span id="likeCount">0</span>
+                                    </button>
+                                    <button class="btn btn-sm" id="commentButton">
+                                        <i class="bi bi-chat"></i> Comment
+                                    </button>
+                                </div>
+                                <button class="btn btn-sm" id="shareButton">
+                                    <i class="bi bi-share"></i> Share
+                                </button>
+                            </div>
+                            
+                            <hr>
+                            
+                            <!-- Comments Section -->
+                            <div class="comments-section mb-3" style="display: none;">
+                                <h6 class="mb-2">Comments</h6>
+                                <div id="commentsList">
+                                    <!-- Comments will be inserted here -->
+                                </div>
+                            </div>
+                            
+                            <!-- Add Comment -->
+                            <form id="commentForm" class="mt-2" style="display: none;">
+                                <div class="input-group">
+                                    <input type="text" id="commentInput" class="form-control" placeholder="Add a comment...">
+                                    <button type="submit" class="btn btn-primary">Post</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ user_data.username }}">
+                            <div id="usernameFeedback" class="invalid-feedback"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="slogan" class="form-label">Slogan</label>
+                            <input type="text" class="form-control" id="slogan" name="slogan" value="{{ user_data.slogan }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="profileImage" class="form-label">Profile Picture</label>
+                            <input class="form-control" type="file" id="profileImage" name="profileImage" accept="image/*">
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            document.getElementById("search-btn").addEventListener("click", function (event) {
+                event.preventDefault();
+                let searchBox = document.getElementById("search-box");
+                if (searchBox.style.display === "none" || searchBox.style.display === "") {
+                    searchBox.style.display = "block";
+                    document.getElementById("search-input").focus();
+                } else {
+                    searchBox.style.display = "none";
+                }
+            });
+            
+            const searchInput = document.getElementById("search-input");
+            const suggestionsDropdown = document.getElementById("suggestions-dropdown");
+            let debounceTimer;
+            
+            if (searchInput) {
+                searchInput.addEventListener("input", function() {
+                    clearTimeout(debounceTimer);
+                    
+                    const query = this.value.trim();
+                    
+                    if (query.length < 1) {
+                        suggestionsDropdown.style.display = "none";
+                        suggestionsDropdown.innerHTML = "";
+                        return;
+                    }
+                    
+                    debounceTimer = setTimeout(() => {
+                        fetch(`/suggest_users?q=${encodeURIComponent(query)}`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                suggestionsDropdown.innerHTML = "";
+                                
+                                if (data.length === 0) {
+                                    // Show "No user found" message when no results
+                                    const noResults = document.createElement("div");
+                                    noResults.className = "suggestion-item";
+                                    noResults.innerHTML = "<span>No user found</span>";
+                                    suggestionsDropdown.appendChild(noResults);
+                                    suggestionsDropdown.style.display = "block";
+                                    return;
+                                }
+                                
+                                data.forEach(user => {
+                                    const item = document.createElement("div");
+                                    item.className = "suggestion-item";
+                                    item.innerHTML = `
+                                        <img src="${user.profile_pic ? '/static/uploads/' + user.profile_pic : '/static/uploads/default-profile.png'}" 
+                                            alt="${user.username}" class="suggestion-pic">
+                                        <span>${user.username}</span>
+                                    `;
+                                    
+                                    item.addEventListener("click", function() {
+                                        window.location.href = `/user/${user.username}`;
+                                    });
+                                    
+                                    suggestionsDropdown.appendChild(item);
+                                });
+                                
+                                suggestionsDropdown.style.display = "block";
+                            })
+                            .catch(error => {
+                                console.error("Error fetching suggestions:", error);
+                                suggestionsDropdown.style.display = "none";
+                            });
+                    }, 300); 
+                });
+            }
+            
+            document.addEventListener("click", function(event) {
+                if (searchInput && !searchInput.contains(event.target) && !suggestionsDropdown.contains(event.target)) {
+                    suggestionsDropdown.style.display = "none";
+                }
+            });
+            
+            if (searchInput) {
+                searchInput.addEventListener("keypress", function(event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        suggestionsDropdown.style.display = "none";
+                        document.getElementById("search-form").submit();
+                    }
+                });
+            }
+            
+            // Image upload preview
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            if (imageInput && imagePreview) {
+                imageInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.classList.remove('d-none');
+                        }
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    } else {
+                        imagePreview.src = '#';
+                        imagePreview.classList.add('d-none');
+                    }
+                });
+            }
+            
+            // Post modal functionality
+            let currentPostId = null;
+            
+            // Add click event listeners to all post images
+            const postImages = document.querySelectorAll('.post-img');
+            postImages.forEach(image => {
+                image.addEventListener('click', function() {
+                    const postSrc = this.getAttribute('src');
+                    const postId = this.getAttribute('data-post-id');
+                    const postCaption = this.getAttribute('data-caption');
+                    const formattedDate = this.getAttribute('data-formatted-date');
+                    
+                    // Set current post ID
+                    currentPostId = postId;
+                    
+                    // Update modal content
+                    document.getElementById('modalPostImage').src = postSrc;
+                    document.getElementById('modalProfilePic').src = document.getElementById('displayProfileImage').src;
+                    document.getElementById('modalUsername').textContent = document.getElementById('displayUsername').textContent;
+                    document.getElementById('modalCaption').textContent = postCaption || '';
+                    document.getElementById('modalPostDate').textContent = formattedDate || '';
+                    
+                    // Fetch post details (likes only initially)
+                    fetchPostDetails(postId, false);
+                    
+                    // Hide comments section initially
+                    document.querySelector('.comments-section').style.display = 'none';
+                    document.getElementById('commentForm').style.display = 'none';
+                    
+                    // Show the modal
+                    const postModal = new bootstrap.Modal(document.getElementById('postModal'));
+                    postModal.show();
+                });
+            });
+            
+            // Function to fetch post details (likes and optionally comments)
+            function fetchPostDetails(postId, fetchComments = false) {
+                fetch(`/get_post_details/${postId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update like count
+                        document.getElementById('likeCount').textContent = data.like_count;
+                        
+                        // Update like button state
+                        const likeButton = document.getElementById('likeButton');
+                        if (data.user_liked) {
+                            likeButton.innerHTML = '<i class="bi bi-heart-fill text-danger"></i> <span id="likeCount">' + data.like_count + '</span>';
+                        } else {
+                            likeButton.innerHTML = '<i class="bi bi-heart"></i> <span id="likeCount">' + data.like_count + '</span>';
+                        }
+                        
+                        // Only update comments if requested
+                        if (fetchComments && data.comments) {
+                            updateComments(data.comments);
+                        }
+                    })
+                    .catch(error => console.error('Error fetching post details:', error));
+            }
+            
+            // Function to update comments in the modal
+            function updateComments(comments) {
+                const commentsList = document.getElementById('commentsList');
+                commentsList.innerHTML = '';
+                
+                if (!comments || comments.length === 0) {
+                    commentsList.innerHTML = '<p class="text-muted">No comments yet</p>';
+                    return;
+                }
+                
+                comments.forEach(comment => {
+                    const commentElement = document.createElement('div');
+                    commentElement.className = 'comment mb-2';
+                    
+                    // Check if the current user/org is the comment author
+                    const isCurrentUser = ('{{ session.user_id }}' && comment.user_id == '{{ session.user_id }}') || 
+                                         ('{{ session.org_id }}' && comment.org_id == '{{ session.org_id }}');
+                    
+                    commentElement.innerHTML = `
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="fw-bold">${comment.first_name} ${comment.last_name}:</span>
+                                <span>${comment.text}</span>
+                            </div>
+                            ${isCurrentUser ? `<button class="btn btn-sm text-danger delete-comment" data-comment-id="${comment.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>` : ''}
+                        </div>
+                        <small class="text-muted">${comment.time_ago}</small>
+                    `;
+                    
+                    commentsList.appendChild(commentElement);
+                });
+                
+                // Add event listeners to delete buttons
+                const deleteButtons = document.querySelectorAll('.delete-comment');
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const commentId = this.getAttribute('data-comment-id');
+                        deleteComment(commentId);
+                    });
+                });
+            }
+            
+            // Delete comment functionality
+            function deleteComment(commentId) {
+                fetch(`/delete_comment/${commentId}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove the comment element from the DOM
+                            const commentElement = document.querySelector(`.delete-comment[data-comment-id="${commentId}"]`).closest('.comment');
+                            if (commentElement) {
+                                commentElement.remove();
+                            }
+                            
+                            // Check if there are no more comments
+                            const commentsList = document.getElementById('commentsList');
+                            if (commentsList.children.length === 0) {
+                                commentsList.innerHTML = '<p class="text-muted">No comments yet</p>';
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error deleting comment:', error));
+            }
+            
+            // Like button functionality
+            const likeButton = document.getElementById('likeButton');
+            if (likeButton) {
+                likeButton.addEventListener('click', function() {
+                    if (!currentPostId) return;
+                    
+                    fetch(`/like/${currentPostId}`, { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Update like button state based on response
+                            const likeCount = data.likes || 0;
+                            
+                            if (data.status === "liked") {
+                                this.innerHTML = '<i class="bi bi-heart-fill text-danger"></i> <span id="likeCount">' + likeCount + '</span>';
+                            } else {
+                                this.innerHTML = '<i class="bi bi-heart"></i> <span id="likeCount">' + likeCount + '</span>';
+                            }
+                        })
+                        .catch(error => console.error('Error toggling like:', error));
+                });
+            }
+            
+            // Comment button functionality
+            const commentButton = document.getElementById('commentButton');
+            if (commentButton) {
+                commentButton.addEventListener('click', function() {
+                    if (!currentPostId) return;
+                    
+                    const commentsSection = document.querySelector('.comments-section');
+                    const commentForm = document.getElementById('commentForm');
+                    
+                    // Toggle comments visibility
+                    if (commentsSection.style.display === 'none') {
+                        commentsSection.style.display = 'block';
+                        commentForm.style.display = 'block';
+                        
+                        // Fetch comments only when the comments section is shown
+                        fetchPostDetails(currentPostId, true);
+                    } else {
+                        commentsSection.style.display = 'none';
+                        commentForm.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Add comment functionality
+            const commentForm = document.getElementById('commentForm');
+            if (commentForm) {
+                commentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    if (!currentPostId) return;
+                    
+                    const commentText = document.getElementById('commentInput').value.trim();
+                    if (!commentText) return;
+                    
+                    const formData = new FormData();
+                    formData.append('comment', commentText);
+                    
+                    fetch(`/comment/${currentPostId}`, {
+                        method: 'POST',
+                        body: formData,
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Clear input field
+                            document.getElementById('commentInput').value = '';
+                            
+                            // Add the new comment to the list
+                            const commentsList = document.getElementById('commentsList');
+                            
+                            // Remove "No comments yet" message if it exists
+                            if (commentsList.innerHTML.includes('No comments yet')) {
+                                commentsList.innerHTML = '';
+                            }
+                            
+                            const commentElement = document.createElement('div');
+                            commentElement.className = 'comment mb-2';
+                            commentElement.innerHTML = `
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <span class="fw-bold">${data.first_name} ${data.last_name}:</span>
+                                        <span>${data.comment}</span>
+                                    </div>
+                                    <button class="btn btn-sm text-danger delete-comment" data-comment-id="${data.id}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">just now</small>
+                            `;
+                            
+                            commentsList.appendChild(commentElement);
+                            
+                            // Add event listener to the new delete button
+                            const deleteButton = commentElement.querySelector('.delete-comment');
+                            deleteButton.addEventListener('click', function() {
+                                const commentId = this.getAttribute('data-comment-id');
+                                deleteComment(commentId);
+                            });
+                        })
+                        .catch(error => console.error('Error adding comment:', error));
+                });
+            }
+            
+            // Share functionality
+            const shareButton = document.getElementById('shareButton');
+            if (shareButton) {
+                shareButton.addEventListener('click', function() {
+                    if (!currentPostId) return;
+                    
+                    // Create a temporary input to copy the URL
+                    const tempInput = document.createElement('input');
+                    const postUrl = window.location.origin + '/post/' + currentPostId;
+                    tempInput.value = postUrl;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    
+                    // Show an alert that the link was copied
+                    alert('Post link copied to clipboard!');
+                });
+            }
+            
+            // Username validation
+            const usernameInput = document.getElementById('username');
+            if (usernameInput) {
+                usernameInput.addEventListener('input', function() {
+                    const username = this.value.trim();
+                    if (username.length < 3) {
+                        this.classList.add('is-invalid');
+                        document.getElementById('usernameFeedback').textContent = 'Username must be at least 3 characters';
+                        return;
+                    }
+                    
+                    fetch('/check_username', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username: username })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'error') {
+                            this.classList.add('is-invalid');
+                            document.getElementById('usernameFeedback').textContent = data.message;
+                        } else {
+                            this.classList.remove('is-invalid');
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

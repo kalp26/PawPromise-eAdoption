@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Your Story</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Share-your-story.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="icon" href="{{ url_for('static', filename='assets/logo1.png') }}">
+    <style>
+        .sidebar .search-box {
+            width: 100%;
+            padding: 10px;
+            display: none;
+            /* Initially hidden */
+        }
+
+        .sidebar .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .sidebar .search-box input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        #suggestions-dropdown {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .suggestion-pic {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-message" class="alert alert-success text-center"
+        style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 1000; width: 50%;">
+        {% for category, message in messages %}
+        <p class="mb-0">{{ message }}</p>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function () {
+        let flashMessage = document.getElementById('flash-message');
+        if (flashMessage) {
+            flashMessage.style.display = 'none';
+        }
+        }, 5000);
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    {% include 'nav1.html' %}
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <a class="navbar-brand d-flex flex-column" href="/Share-your-story">
+            <img src="{{ url_for('static', filename='assets/Features/Share Your Story2.png') }}" alt="Share Your Story">
+            <span>Share Your Story</span>
+        </a>
+        <ul class="navbar-nav mt-4">
+            <li class="nav-item"><a class="nav-link" href="/Share-your-story"><i class="fa-solid fa-house"></i>
+                    <span>Feed</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="#" id="search-btn"><i class="fa-solid fa-magnifying-glass"></i>
+                <span>Search</span></a></li>
+            <div class="search-box" id="search-box">
+                <form action="/search" method="GET" id="search-form">
+                    <input type="text" class="form-control" placeholder="Search users..." name="q" id="search-input" value="{{ query }}" autocomplete="off">
+                    <div id="suggestions-dropdown"></div>
+                </form>
+            </div>
+            <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#upload_post">
+                    <i class="fa-solid fa-square-plus"></i> <span>New Post</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="/Sys-profile"><i class="fa-regular fa-user"></i>
+                    <span>Profile</span></a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="container">
+
+            <div class="row justify-content-center">
+                {% for post in posts %}
+                <div class="col-md-8">
+                    <div class="post card p-3 shadow-sm" style="margin-top: 50px;">
+
+                        <!-- Post Header -->
+                        <div class="post-header d-flex align-items-center mb-2" data-username="{{ post.username }}">
+                            <img src="{{ url_for('static', filename='uploads/' + post.profile_pic) }}" 
+                                class="profile-img" 
+                                alt="User Profile" 
+                                onerror="this.onerror=null; this.src='{{ url_for('static', filename='uploads/default.jpg') }}';">
+
+                            <!-- Post Details -->
+                            <div class="ms-2">
+                                <span><strong>{{ post.username }}</strong></span>
+                                <span class="text-muted ms-2" style="font-size: 0.8rem;">{{ post.time_ago }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Fixed Post Image -->
+                        <div class="post-img-container">
+                            <img src="{{ url_for('static', filename='uploads/' + post.image) }}" class="post-img"
+                                alt="Post" onload="adjustImage(this)">
+                        </div>
+
+                        <!-- Post Caption -->
+                        <p class="post-caption mt-2"><strong>{{ post.username }}</strong> {{ post.caption }}</p>
+
+                        <!-- Post Footer -->
+                        <div class="post-footer mt-2">
+                            <button class="btn like-btn me-2 {% if post.user_liked %}liked{% endif %}" data-id="{{ post.id }}" onclick="toggleLike(this)">
+                                <i class="{% if post.user_liked %}fa-solid{% else %}fa-regular{% endif %} fa-heart"></i> 
+                                <span id="likes-{{ post.id }}">{{ post.like_count }}</span>
+                            </button>
+                        
+                            <button class="btn me-2 comment-btn" data-id="{{ post.id }}">
+                                <i class="fa-regular fa-comment"></i>
+                            </button>
+
+                            <!-- Share Button -->
+                            <div class="dropdown d-inline">
+                                <button class="btn send-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fa-regular fa-paper-plane"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="https://api.whatsapp.com/send?text=Check%20this%20out!%20{{ request.url_root }}static/uploads/{{ post.image }}"
+                                            target="_blank">
+                                            📱 Share on WhatsApp
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="https://www.facebook.com/sharer/sharer.php?u={{ request.url_root }}static/uploads/{{ post.image }}"
+                                            target="_blank">
+                                            📘 Share on Facebook
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="https://www.instagram.com/" target="_blank">
+                                            📸 Share on Instagram
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+
+                        <!-- Comments Section (Initially Hidden) -->
+                        <div class="mt-2">
+                            <div id="comments-container-{{ post.id }}" class="comments-section" style="display: none;">
+                        {% for comment in post.comments %}
+                            <p class="small text-muted" id="comment-{{ comment.id }}">
+                                <strong>{{ comment.username }}</strong>: {{ comment.text }}
+                                {% if (user_type == 'user' and comment.user_id == user_id) or (user_type == 'organization' and comment.org_id == org_id) %}
+                                    <button class="btn btn-sm delete-comment-btn" style="color: red;" onclick="deleteComment({{ comment.id }})">
+                                        🗑️
+                                    </button>
+                                {% endif %}
+                            </p>
+                        {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Comment Form (Initially Hidden) -->
+                        <div class="comment-form" id="comment-form-{{ post.id }}" style="display: none;">
+                            <form onsubmit="submitComment(event, {{ post.id }})">
+                                <div class="input-group">
+                                    <input type="text" name="text" id="comment-input-{{ post.id }}" class="form-control" placeholder="Add a comment" required>
+                                    <button type="submit" class="btn btn-sm btn-secondary">Post</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Post -->
+    <div class="modal fade" id="upload_post" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" class="mb-4">
+                        <div class="input-group">
+                            <div class="row">
+                                <div class="col-12 mt-2">
+                                    <input type="file" name="image" required class="form-control" id="imageInput">
+                                </div>
+
+                                <div class="col-12 mt-2">
+                                    <!-- Image Preview -->
+                                    <div class="text-center mb-4">
+                                        <img id="imagePreview" src="#" alt="Image Preview" class="img-fluid d-none"
+                                            style="max-height: 300px;">
+                                    </div>
+                                </div>
+
+                                <div class="col-12 mt-3">
+                                    <input type="text" name="caption" class="form-control" placeholder="Add a caption">
+                                </div>
+
+                                <div class="col-12 mt-3">
+                                    <button type="submit" class="btn btn-primary">Upload</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Username Required Modal -->
+    <div class="modal fade" id="usernameRequiredModal" tabindex="-1" aria-labelledby="usernameRequiredModalLabel"
+    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="usernameRequiredModalLabel">Username Required</h5>
+            </div>
+            <div class="modal-body">
+                <p>You need to set a unique username to access Share Your Story. Please choose a username below:</p>
+                <form id="usernameForm" action="/update_profile" method="POST">
+                    <div class="mb-3">
+                        <label for="requiredUsername" class="form-label">Username:</label>
+                        <input type="text" class="form-control" id="requiredUsername" name="username" required
+                            minlength="3" maxlength="20">
+                        <div id="usernameStatus" class="form-text">Username must be 3-20 characters.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="saveUsernameBtn">Save Username</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script>
+        const userInfo = {
+            type: '{{ user_type if user_type else "" }}',
+            id: {% if user_type == 'user' %}{{ user_id if user_id else 'null' }}{% elif user_type == 'organization' %}{{ org_id if org_id else 'null' }}{% else %}null{% endif %}
+        };
+    
+        // Image preview functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+            
+            if (imageInput && imagePreview) {
+                imageInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            imagePreview.src = e.target.result;
+                            imagePreview.classList.remove('d-none');
+                        }
+                        
+                        reader.readAsDataURL(this.files[0]);
+                    } else {
+                        imagePreview.src = '#';
+                        imagePreview.classList.add('d-none');
+                    }
+                });
+            }
+    
+            // Search functionality
+            document.getElementById("search-btn").addEventListener("click", function(event) {
+                event.preventDefault();
+                let searchBox = document.getElementById("search-box");
+                if (searchBox.style.display === "none" || searchBox.style.display === "") {
+                    searchBox.style.display = "block";
+                    document.getElementById("search-input").focus();
+                } else {
+                    searchBox.style.display = "none";
+                }
+            });
+    
+            // Search suggestions
+            const searchInput = document.getElementById("search-input");
+            const suggestionsDropdown = document.getElementById("suggestions-dropdown");
+            let debounceTimer;
+    
+            if (searchInput && suggestionsDropdown) {
+                searchInput.addEventListener("input", function() {
+                    clearTimeout(debounceTimer);
+                    
+                    const query = this.value.trim();
+                    
+                    if (query.length < 1) {
+                        suggestionsDropdown.style.display = "none";
+                        suggestionsDropdown.innerHTML = "";
+                        return;
+                    }
+                    
+                    debounceTimer = setTimeout(() => {
+                        fetch(`/suggest_users?q=${encodeURIComponent(query)}`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                suggestionsDropdown.innerHTML = "";
+                                
+                                if (data.length === 0) {
+                                    const noResults = document.createElement("div");
+                                    noResults.className = "suggestion-item";
+                                    noResults.innerHTML = "<span>No user found</span>";
+                                    suggestionsDropdown.appendChild(noResults);
+                                    suggestionsDropdown.style.display = "block";
+                                    return;
+                                }
+                                
+                                data.forEach(user => {
+                                    const item = document.createElement("div");
+                                    item.className = "suggestion-item";
+                                    item.innerHTML = `
+                                        <img src="${user.profile_pic ? '/static/uploads/' + user.profile_pic : '/static/uploads/default.jpg'}" 
+                                            alt="${user.username}" class="suggestion-pic">
+                                        <span>${user.username}</span>
+                                    `;
+                                    
+                                    item.addEventListener("click", function() {
+                                        window.location.href = `/user/${user.username}`;
+                                    });
+                                    
+                                    suggestionsDropdown.appendChild(item);
+                                });
+                                
+                                suggestionsDropdown.style.display = "block";
+                            })
+                            .catch(error => {
+                                console.error("Error fetching suggestions:", error);
+                                suggestionsDropdown.style.display = "none";
+                            });
+                    }, 300);
+                });
+    
+                document.addEventListener("click", function(event) {
+                    if (!searchInput.contains(event.target) && !suggestionsDropdown.contains(event.target)) {
+                        suggestionsDropdown.style.display = "none";
+                    }
+                });
+    
+                searchInput.addEventListener("keypress", function(event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        suggestionsDropdown.style.display = "none";
+                        document.getElementById("search-form").submit();
+                    }
+                });
+            }
+    
+            // Comment button toggles
+            document.querySelectorAll(".comment-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    let postId = this.getAttribute("data-id");
+                    let commentSection = document.getElementById(`comments-container-${postId}`);
+                    let commentForm = document.getElementById(`comment-form-${postId}`);
+    
+                    if (commentSection.style.display === "none") {
+                        commentSection.style.display = "block";
+                        commentForm.style.display = "block";
+                    } else {
+                        commentSection.style.display = "none";
+                        commentForm.style.display = "none";
+                    }
+                });
+            });
+        });
+    
+        // Like functionality
+        function toggleLike(button) {
+            let postId = button.getAttribute('data-id');
+            
+            fetch(`/like/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                // Update like count
+                document.getElementById(`likes-${postId}`).textContent = data.likes;
+                
+                // Toggle heart icon
+                let heartIcon = button.querySelector('i');
+                if (data.status === 'liked') {
+                    heartIcon.classList.remove('fa-regular');
+                    heartIcon.classList.add('fa-solid');
+                    button.classList.add('liked');
+                } else {
+                    heartIcon.classList.remove('fa-solid');
+                    heartIcon.classList.add('fa-regular');
+                    button.classList.remove('liked');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    
+        // Comment submission
+        function submitComment(event, postId) {
+            event.preventDefault();
+    
+            let commentInput = document.getElementById(`comment-input-${postId}`);
+            let commentText = commentInput.value.trim();
+    
+            if (!commentText) return;
+    
+            fetch(`/comment/${postId}`, {
+                method: "POST",
+                body: new URLSearchParams({ comment: commentText }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    let commentContainer = document.getElementById(`comments-container-${postId}`);
+                    let newComment = document.createElement("p");
+                    newComment.className = "small text-muted";
+                    newComment.id = `comment-${data.id}`;
+                    
+                    // Create delete button if user is owner
+                    let deleteButton = '';
+                    if (userInfo.id && 
+                        ((data.user_id && data.user_id == userInfo.id) || 
+                         (data.org_id && data.org_id == userInfo.id))) {
+                        deleteButton = `<button class="btn btn-sm delete-comment-btn" style="color: red;" onclick="deleteComment(${data.id})">🗑️</button>`;
+                    }
+                    
+                    newComment.innerHTML = `<strong>${data.first_name} ${data.last_name}</strong>: ${data.comment} ${deleteButton}`;
+                    
+                    commentContainer.prepend(newComment);
+                    commentInput.value = "";
+                    
+                    // Show comments section
+                    commentContainer.style.display = "block";
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    
+        // Comment deletion
+        function deleteComment(commentId) {
+            if (!confirm('Are you sure you want to delete this comment?')) return;
+            
+            fetch(`/delete_comment/${commentId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let commentElement = document.getElementById(`comment-${commentId}`);
+                    if (commentElement) {
+                        commentElement.remove();
+                    }
+                } else {
+                    alert("Failed to delete comment.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    
+        // Image adjustment
+        function adjustImage(img) {
+            const container = img.parentElement;
+            const aspectRatio = img.naturalWidth / img.naturalHeight;
+            
+            if (aspectRatio > 1) {
+                // Landscape image
+                img.style.width = '100%';
+                img.style.height = 'auto';
+            } else {
+                // Portrait or square image
+                img.style.width = 'auto';
+                img.style.height = '100%';
+            }
+        }
+
+        // Add debounce function definition
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    func.apply(context, args);
+                }, wait);
+            };
+        }
+
+        // Username validation
+        const usernameNeedsUpdate = {% if username_needs_update %}true{% else %}false{% endif %};
+
+        if (usernameNeedsUpdate) {
+            const usernameModal = new bootstrap.Modal(document.getElementById('usernameRequiredModal'));
+            usernameModal.show();
+
+            // Prevent modal from being closed if username is required
+            document.getElementById('usernameRequiredModal').addEventListener('hide.bs.modal', function (event) {
+                if (usernameNeedsUpdate) {
+                    event.preventDefault();
+                }
+            });
+
+            // Username form submission validation
+            document.getElementById('usernameForm').addEventListener('submit', function (event) {
+                const username = document.getElementById('requiredUsername').value.trim();
+                const saveUsernameBtn = document.getElementById('saveUsernameBtn');
+                const usernameStatus = document.getElementById('usernameStatus');
+                
+                if (username.length < 3 || saveUsernameBtn.disabled) {
+                    event.preventDefault();
+                    usernameStatus.textContent = 'Please enter a valid username';
+                    usernameStatus.className = 'form-text text-danger';
+                }
+            });
+
+            // Username availability check
+            document.getElementById('requiredUsername').addEventListener('input', debounce(function() {
+                const username = this.value.trim();
+                const saveUsernameBtn = document.getElementById('saveUsernameBtn');
+                const usernameStatus = document.getElementById('usernameStatus');
+
+                // Check length
+                if (username.length < 3) {
+                    usernameStatus.textContent = 'Username must be at least 3 characters';
+                    usernameStatus.className = 'form-text text-warning';
+                    saveUsernameBtn.disabled = true;
+                    return;
+                }
+
+                // Check availability
+                fetch('/check_username', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        usernameStatus.textContent = 'Username available!';
+                        usernameStatus.className = 'form-text text-success';
+                        saveUsernameBtn.disabled = false;
+                    } else {
+                        usernameStatus.textContent = 'Username already taken';
+                        usernameStatus.className = 'form-text text-danger';
+                        saveUsernameBtn.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking username:', error);
+                    usernameStatus.textContent = 'Error checking username';
+                    usernameStatus.className = 'form-text text-danger';
+                });
+            }, 500));
+        }
+    </script>
+        
+</body>
+
+</html>
