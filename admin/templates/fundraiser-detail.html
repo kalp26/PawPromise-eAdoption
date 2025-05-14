@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fundraiser Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { padding: 20px; }
+        .card { 
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .fundraiser-image-container {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .fundraiser-image-main {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .details-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section-title {
+            border-bottom: 1px solid #e3e6f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #4e73df;
+            font-weight: 600;
+        }
+        .detail-row {
+            margin-bottom: 12px;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            width: 160px;
+            display: inline-block;
+        }
+        .badge {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        .badge-pending { background-color: #ffc107; color: #212529; }
+        .badge-approved { background-color: #28a745; color: white; }
+        .badge-rejected { background-color: #dc3545; color: white; }
+        .document-link {
+            display: inline-flex;
+            align-items: center;
+            background-color: #f8f9fc;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+            border: 1px solid #e3e6f0;
+            text-decoration: none;
+            color: #5a5c69;
+        }
+        .document-link:hover {
+            background-color: #eaecf4;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .document-icon {
+            margin-right: 10px;
+            font-size: 20px;
+            color: #4e73df;
+        }
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .status-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .top-controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .toast {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .creator-section {
+            padding: 15px;
+            background-color: #f8f9fc;
+            border-radius: 8px;
+            border: 1px solid #e3e6f0;
+            margin-top: 15px;
+        }
+        .event-feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .feature-icon {
+            color: #4e73df;
+            font-size: 18px;
+            margin-right: 10px;
+            width: 25px;
+            text-align: center;
+        }
+        .donation-section {
+            background-color: #f0f7ff;
+            border: 1px solid #cce5ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .qr-code-container {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .qr-code-image {
+            max-width: 200px;
+            max-height: 200px;
+        }
+        .progress {
+            height: 15px;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            background-color: #4e73df;
+        }
+        .funding-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .funding-stat {
+            text-align: center;
+            flex: 1;
+        }
+        .funding-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4e73df;
+        }
+        .funding-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'nav.html' %}
+
+    <div class="container mt-4">
+        <div class="top-controls">
+            <h2>Fundraiser Details</h2>
+            <div>
+                <a href="/fundraiser-Listings" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Fundraisers
+                </a>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-5">
+                <div class="fundraiser-image-container">
+                    {% if fundraiser.donation_qr %}
+                    <img src="/static/uploads/{{ fundraiser.donation_qr }}" alt="{{ fundraiser.title }}" class="fundraiser-image-main">
+                    {% else %}
+                        <img src="/static/img/default-fundraiser.jpg" alt="Default Fundraiser" class="fundraiser-image-main">
+                    {% endif %}
+                    
+                    {% if fundraiser.status == 'pending' %}
+                        <span class="status-badge badge-pending">Pending</span>
+                    {% elif fundraiser.status == 'approved' %}
+                        <span class="status-badge badge-approved">Approved</span>
+                    {% elif fundraiser.status == 'rejected' %}
+                        <span class="status-badge badge-rejected">Rejected</span>
+                    {% endif %}
+                </div>
+                
+                <div class="details-section">
+                    <h4 class="section-title">Donation Information</h4>
+                    
+                    {% if fundraiser.donation_qr %}
+                    <div class="qr-code-container">
+                        <img src="/static/uploads/{{ fundraiser.donation_qr }}" alt="Donation QR Code" class="qr-code-image">
+                    </div>
+                    {% endif %}
+                    
+                    {% if fundraiser.upi_id %}
+                    <div class="event-feature">
+                        <i class="fas fa-money-bill-wave feature-icon"></i>
+                        <div><strong>UPI ID:</strong> {{ fundraiser.upi_id }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if fundraiser.donor_message %}
+                    <div class="mt-3">
+                        <h5>Message to Donors</h5>
+                        <p>{{ fundraiser.donor_message }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if fundraiser.proof_document %}
+                <div class="details-section">
+                    <h4 class="section-title">Supporting Documents</h4>
+                    <a href="/static/uploads/{{ fundraiser.proof_document }}" target="_blank" class="document-link">
+                        <i class="fas fa-file-pdf document-icon"></i>
+                        <span>View Proof Document</span>
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if fundraiser.social_media or fundraiser.website %}
+                <div class="details-section">
+                    <h4 class="section-title">Connect & Follow</h4>
+                    
+                    {% if fundraiser.social_media %}
+                    <div class="event-feature">
+                        <i class="fas fa-share-alt feature-icon"></i>
+                        <div>{{ fundraiser.social_media }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if fundraiser.website %}
+                    <div class="event-feature">
+                        <i class="fas fa-globe feature-icon"></i>
+                        <div><a href="{{ fundraiser.website }}" target="_blank">{{ fundraiser.website }}</a></div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Right Column -->
+            <div class="col-lg-7">
+                <div class="details-section">
+                    <h3>{{ fundraiser.title }}</h3>
+                    <div class="mb-3">
+                        <span class="badge bg-primary">{{ fundraiser.creator_type|capitalize }}</span>
+                        <span class="badge bg-secondary">Status: {{ fundraiser.status|capitalize }}</span>
+                    </div>
+                    
+                    <h4 class="section-title">Fundraiser Information</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-row">
+                                <span class="detail-label">Start Date:</span> {{ fundraiser.start_date.strftime('%Y-%m-%d') if fundraiser.start_date else 'Not specified' }}
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">End Date:</span> {{ fundraiser.end_date.strftime('%Y-%m-%d') if fundraiser.end_date else 'Not specified' }}
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Animals Helped:</span> {{ fundraiser.animals_helped or 'Not specified' }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-row">
+                                <span class="detail-label">Created By:</span> {{ fundraiser.creator_name }}
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Creator Type:</span> {{ fundraiser.creator_type|capitalize }}
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Status:</span> {{ fundraiser.status|capitalize }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="section-title mt-4">Brief Description</h4>
+                    <p>{{ fundraiser.brief_description }}</p>
+                    
+                    {% if fundraiser.funds_usage %}
+                    <h4 class="section-title mt-4">How Funds Will Be Used</h4>
+                    <p>{{ fundraiser.funds_usage }}</p>
+                    {% endif %}
+                    
+                    {% if fundraiser.beneficiaries %}
+                    <h4 class="section-title mt-4">Beneficiaries</h4>
+                    <p>{{ fundraiser.beneficiaries }}</p>
+                    {% endif %}
+                    
+                    {% if fundraiser.previous_efforts %}
+                    <h4 class="section-title mt-4">Previous Efforts</h4>
+                    <p>{{ fundraiser.previous_efforts }}</p>
+                    {% endif %}
+                    
+                    <div class="creator-section">
+                        <h5><i class="fas fa-user me-2"></i>Creator Information</h5>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="detail-row">
+                                    <span class="detail-label">Name:</span> {{ fundraiser.creator_name }}
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Type:</span> {{ fundraiser.creator_type|capitalize }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-row">
+                                    <span class="detail-label">Email:</span> {{ fundraiser.creator_email }}
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Emergency Contact:</span> {{ fundraiser.emergency_contact or 'Not provided' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if fundraiser.endorsements %}
+                    <h4 class="section-title mt-4">Endorsements</h4>
+                    <p>{{ fundraiser.endorsements }}</p>
+                    {% endif %}
+                    
+                    {% if fundraiser.volunteer_info %}
+                    <h4 class="section-title mt-4">Volunteer Information</h4>
+                    <p>{{ fundraiser.volunteer_info }}</p>
+                    {% endif %}
+                    
+                    {% if fundraiser.status == 'pending' %}
+                    <div class="status-controls">
+                        <button class="btn btn-success status-btn" data-fundraiser-id="{{ fundraiser.id }}" data-status="approved">
+                            <i class="fas fa-check me-1"></i> Approve Fundraiser
+                        </button>
+                        <button class="btn btn-danger status-btn" data-fundraiser-id="{{ fundraiser.id }}" data-status="rejected">
+                            <i class="fas fa-times me-1"></i> Reject Fundraiser
+                        </button>
+                    </div>
+                    {% elif fundraiser.status == 'approved' %}
+                    <div class="status-controls">
+                        <button class="btn btn-secondary status-btn" data-fundraiser-id="{{ fundraiser.id }}" data-status="pending">
+                            <i class="fas fa-undo me-1"></i> Reset to Pending
+                        </button>
+                    </div>
+                    {% elif fundraiser.status == 'rejected' %}
+                    <div class="status-controls">
+                        <button class="btn btn-secondary status-btn" data-fundraiser-id="{{ fundraiser.id }}" data-status="pending">
+                            <i class="fas fa-undo me-1"></i> Reset to Pending
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast notifications container -->
+    <div class="toast-container">
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Status updated successfully.
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Function to show toast notification
+            function showToast(title, message, type) {
+                $('#toast-title').text(title);
+                $('#toast-message').text(message);
+                
+                // Set toast background color based on type
+                const toast = $('.toast');
+                toast.removeClass('bg-success bg-danger bg-warning');
+                
+                if (type === 'success') {
+                    toast.addClass('bg-success text-white');
+                } else if (type === 'error') {
+                    toast.addClass('bg-danger text-white');
+                } else if (type === 'warning') {
+                    toast.addClass('bg-warning');
+                }
+                
+                // Show the toast
+                const bsToast = new bootstrap.Toast($('.toast'));
+                bsToast.show();
+            }
+            
+            // Handle status button clicks
+            $('.status-btn').click(function() {
+                const fundraiserId = $(this).data('fundraiser-id');
+                const status = $(this).data('status');
+                const buttonElement = $(this);
+                const originalHtml = buttonElement.html();
+                
+                // Show loading spinner
+                buttonElement.prop('disabled', true);
+                buttonElement.html('<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...');
+                
+                // Send AJAX request to update status - FIXED URL to match Flask route
+                $.ajax({
+                    url: '/update_fundraiser_status',
+                    method: 'POST',
+                    data: {
+                        fundraiser_id: fundraiserId,
+                        status: status
+                    },
+                    success: function(response) {
+                        if(response.success) {
+                            // Show success notification
+                            showToast('Success', response.message, 'success');
+                            
+                            // Reload the page to show updated status
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            // Show error notification
+                            showToast('Error', response.message, 'error');
+                            buttonElement.html(originalHtml);
+                        }
+                        
+                        // Re-enable the button
+                        buttonElement.prop('disabled', false);
+                    },
+                    error: function(xhr, status, error) {
+                        // Show error notification
+                        showToast('Error', 'An error occurred while updating the status.', 'error');
+                        buttonElement.html(originalHtml);
+                        buttonElement.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

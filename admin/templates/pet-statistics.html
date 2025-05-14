@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Pet Statistics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { padding: 20px; }
+        .card { 
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: #4b70dd;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        .stats-card {
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'nav.html' %}
+
+    <div class="container mt-4">
+        <div class="top-controls">
+            <h2>Pet Statistics Dashboard</h2>
+            <a href="/pet-selling" class="btn btn-outline-primary">
+                <i class="fas fa-list me-1"></i> Back to Pet Listings
+            </a>
+        </div>
+        
+        <!-- Summary Stats -->
+        <div class="row mb-4">
+            <!-- Total Pets -->
+            <div class="col-md-3">
+                <div class="card stats-card bg-white">
+                    <div class="card-body text-center p-4">
+                        <div class="stat-icon mb-3">
+                            <i class="fas fa-paw fa-2x text-primary"></i>
+                        </div>
+                        <div class="stat-value">
+                            {{ status_counts.get('pending', 0) + status_counts.get('approved', 0) + status_counts.get('rejected', 0) }}
+                        </div>
+                        <div class="stat-label">Total Pets</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Approved Pets -->
+            <div class="col-md-3">
+                <div class="card stats-card bg-white">
+                    <div class="card-body text-center p-4">
+                        <div class="stat-icon mb-3">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                        <div class="stat-value">
+                            {{ status_counts.get('approved', 0) }}
+                        </div>
+                        <div class="stat-label">Approved</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pending Pets -->
+            <div class="col-md-3">
+                <div class="card stats-card bg-white">
+                    <div class="card-body text-center p-4">
+                        <div class="stat-icon mb-3">
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                        <div class="stat-value">
+                            {{ status_counts.get('pending', 0) }}
+                        </div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rejected Pets -->
+            <div class="col-md-3">
+                <div class="card stats-card bg-white">
+                    <div class="card-body text-center p-4">
+                        <div class="stat-icon mb-3">
+                            <i class="fas fa-times-circle fa-2x text-danger"></i>
+                        </div>
+                        <div class="stat-value">
+                            {{ status_counts.get('rejected', 0) }}
+                        </div>
+                        <div class="stat-label">Rejected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="row">
+            <!-- Status Distribution Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie me-2"></i> Status Distribution
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Species Distribution Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-pie me-2"></i> Species Distribution
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="speciesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Monthly Trends Chart -->
+            <div class="col-lg-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line me-2"></i> Monthly Listing Trends
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Stats Row -->
+        <div class="row">
+            <!-- Top Breeds -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-list-ol me-2"></i> Top 5 Breeds
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="breedChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Average Age -->
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-birthday-cake me-2"></i> Average Pet Age by Species
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Complete the script section of the pet-statistics.html
+$(document).ready(function() {
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Approved', 'Pending', 'Rejected'],
+            datasets: [{
+                data: [
+                    {{ status_counts.get('approved', 0) }},
+                    {{ status_counts.get('pending', 0) }},
+                    {{ status_counts.get('rejected', 0) }}
+                ],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(40, 167, 69, 1)',
+                    'rgba(255, 193, 7, 1)',
+                    'rgba(220, 53, 69, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Species Distribution Chart
+    const speciesCtx = document.getElementById('speciesChart').getContext('2d');
+    const speciesChart = new Chart(speciesCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for species in species_counts %}'{{ species }}',{% endfor %}],
+            datasets: [{
+                data: [{% for species, count in species_counts.items() %}{{ count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(255, 159, 64, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Monthly Trends Chart
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for month in monthly_counts %}'{{ month }}',{% endfor %}],
+            datasets: [{
+                label: 'Number of Listings',
+                data: [{% for month, count in monthly_counts.items() %}{{ count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    // Top Breeds Chart
+    const breedCtx = document.getElementById('breedChart').getContext('2d');
+    const breedChart = new Chart(breedCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for breed in breed_counts %}'{{ breed }}',{% endfor %}],
+            datasets: [{
+                label: 'Number of Pets',
+                data: [{% for breed, count in breed_counts.items() %}{{ count }},{% endfor %}],
+                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+    
+    // Average Age Chart
+    const ageCtx = document.getElementById('ageChart').getContext('2d');
+    const ageChart = new Chart(ageCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for species in avg_age %}'{{ species }}',{% endfor %}],
+            datasets: [{
+                label: 'Average Age (Years)',
+                data: [{% for species, age in avg_age.items() %}{{ age }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 205, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                ],
+                borderColor: [
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // Add refresh button functionality
+    $('#refreshStats').click(function() {
+        location.reload();
+    });
+    
+    // Add date range functionality if needed
+    $('#dateRange').change(function() {
+        $('#dateRangeForm').submit();
+    });
+});
+    </script>
+</body>
+</html>

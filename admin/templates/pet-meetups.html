@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Meetup Events</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { padding: 20px; }
+        .card { 
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-header {
+            background-color: #4b70dd;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        .badge {
+            font-size: 0.75rem;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        .badge-pending { background-color: #ffc107; color: #212529; }
+        .badge-approved { background-color: #28a745; color: white; }
+        .badge-rejected { background-color: #dc3545; color: white; }
+        
+        .detail-row {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .status-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .filters {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .btn-outline-secondary {
+            border-color: #d1d3e2;
+            color: #6e707e;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #eaecf4;
+            color: #6e707e;
+        }
+        .meetup-card-footer {
+            background-color: #f8f9fc;
+            border-top: 1px solid #e3e6f0;
+            padding: 10px 15px;
+        }
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .top-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .event-poster {
+            height: 140px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        /* Spinner for loading state */
+        .spinner-border {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.2em;
+        }
+        /* Toast notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        .toast {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toast-header {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    {% include 'nav.html' %}
+
+    <div class="container mt-4">
+        <div class="top-controls">
+            <h2>Pet Meetup Events</h2>
+            
+        </div>
+        
+        <div class="filters">
+            <form action="/pet-meetups" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="event_type" class="form-label">Event Type</label>
+                    <select name="event_type" id="event_type" class="form-select">
+                        <option value="">All</option>
+                        <option value="Playdate" {% if request.args.get('event_type') == 'Playdate' %}selected{% endif %}>Playdate</option>
+                        <option value="Training" {% if request.args.get('event_type') == 'Training' %}selected{% endif %}>Training</option>
+                        <option value="Competition" {% if request.args.get('event_type') == 'Competition' %}selected{% endif %}>Competition</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">All</option>
+                        <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if request.args.get('status') == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="rejected" {% if request.args.get('status') == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="date_range" class="form-label">Date Range</label>
+                    <select name="date_range" id="date_range" class="form-select">
+                        <option value="">All Time</option>
+                        <option value="today" {% if request.args.get('date_range') == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if request.args.get('date_range') == 'week' %}selected{% endif %}>This Week</option>
+                        <option value="month" {% if request.args.get('date_range') == 'month' %}selected{% endif %}>This Month</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter me-1"></i> Filter
+                    </button>
+                    <a href="/pet-meetups" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo me-1"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="row">
+            {% for meetup in meetups %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card">
+                    {% if meetup.status == 'pending' %}
+                        <span class="status-badge badge-pending">Pending</span>
+                    {% elif meetup.status == 'approved' %}
+                        <span class="status-badge badge-approved">Approved</span>
+                    {% elif meetup.status == 'rejected' %}
+                        <span class="status-badge badge-rejected">Rejected</span>
+                    {% endif %}
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-5">
+                                {% if meetup.event_poster %}
+                                    <img src="/uploads/{{ meetup.event_poster }}" alt="{{ meetup.event_name }}" class="event-poster img-fluid">
+                                {% else %}
+                                    <img src="/static/img/default-event.jpg" alt="Default Event Image" class="event-poster img-fluid">
+                                {% endif %}
+                            </div>
+                            <div class="col-md-7">
+                                <h5>{{ meetup.event_name }}</h5>
+                                <div class="mb-2">
+                                    <span class="badge bg-primary">{{ meetup.event_type }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Date:</span> {{ meetup.event_datetime.strftime('%Y-%m-%d %H:%M') if meetup.event_datetime else 'N/A' }}
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Duration:</span> {{ meetup.event_duration }}
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Organizer:</span> {{ meetup.organizer_name }}
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Location:</span> {{ meetup.event_location }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Pet Types:</span> {{ meetup.allowed_pet_types }}
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Pet Limit:</span> {{ meetup.pet_limit }}
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Max Participants:</span> {{ meetup.max_participants }}
+                        </div>
+                        
+                        <div class="d-flex gap-2 mb-2 mt-3">
+                            <a href="/meetup/{{meetup.id}}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> View Details
+                            </a>
+                            
+                            {% if meetup.google_maps_link %}
+                                <a href="{{ meetup.google_maps_link }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-map-marker-alt me-1"></i> View Map
+                                </a>
+                            {% endif %}
+                        </div>
+                        
+                        {% if meetup.status == 'pending' %}
+                        <div class="status-controls">
+                            <button class="btn btn-success status-btn" data-meetup-id="{{ meetup.id }}" data-status="approved">
+                                <i class="fas fa-check me-1"></i> Approve
+                            </button>
+                            <button class="btn btn-danger status-btn" data-meetup-id="{{ meetup.id }}" data-status="rejected">
+                                <i class="fas fa-times me-1"></i> Reject
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="status-controls">
+                            <button class="btn btn-secondary status-btn" data-meetup-id="{{ meetup.id }}" data-status="pending">
+                                <i class="fas fa-undo me-1"></i> Reset to Pending
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="meetup-card-footer">
+                        <small class="text-muted">
+                            <i class="far fa-calendar-alt me-1"></i> Contact: {{ meetup.email }} | {{ meetup.phone }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if not meetups %}
+        <div class="text-center py-5">
+            <div class="mb-3">
+                <i class="fas fa-search fa-3x text-muted"></i>
+            </div>
+            <h4>No meetups found matching your criteria</h4>
+            <p class="text-muted">Try adjusting your filters or check back later</p>
+            <a href="/pet-meetups" class="btn btn-outline-primary mt-2">View All Meetups</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Toast notifications container -->
+    <div class="toast-container">
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Status updated successfully.
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Wait for the document to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Toast functionality
+    function showToast(title, message, type) {
+        const toastTitle = document.getElementById('toast-title');
+        const toastMessage = document.getElementById('toast-message');
+        const toast = document.querySelector('.toast');
+        
+        // Set content
+        toastTitle.textContent = title;
+        toastMessage.textContent = message;
+        
+        // Reset classes
+        toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'text-white');
+        
+        // Set appropriate class
+        if (type === 'success') {
+            toast.classList.add('bg-success', 'text-white');
+        } else if (type === 'error') {
+            toast.classList.add('bg-danger', 'text-white');
+        } else if (type === 'warning') {
+            toast.classList.add('bg-warning');
+        }
+        
+        // Show toast
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+    }
+    
+    // Handle status button clicks using event delegation
+    document.addEventListener('click', function(event) {
+        // Check if clicked element is a status button or its child
+        const button = event.target.closest('.status-btn');
+        if (!button) return;
+        
+        // Prevent default action
+        event.preventDefault();
+        
+        // Get data attributes
+        const meetupId = button.getAttribute('data-meetup-id');
+        const status = button.getAttribute('data-status');
+        
+        // Store original button HTML
+        const originalHtml = button.innerHTML;
+        
+        // Show loading spinner
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Processing...';
+        
+        // Find the parent card
+        const card = button.closest('.card');
+        
+        // Create form data for the request
+        const formData = new FormData();
+        formData.append('status', status);
+        
+        // Send fetch request
+        fetch('/update-meetup-status/' + meetupId, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success toast
+                showToast('Success', 'Meetup status has been updated to ' + status, 'success');
+                
+                // Update UI
+                
+                // 1. Update status badge
+                const oldBadge = card.querySelector('.status-badge');
+                if (oldBadge) {
+                    oldBadge.remove();
+                }
+                
+                // Determine badge class
+                let badgeClass = '';
+                if (status === 'pending') badgeClass = 'badge-pending';
+                else if (status === 'approved') badgeClass = 'badge-approved';
+                else if (status === 'rejected') badgeClass = 'badge-rejected';
+                
+                // Create new badge
+                const newBadge = document.createElement('span');
+                newBadge.className = 'status-badge ' + badgeClass;
+                newBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                card.prepend(newBadge);
+                
+                // 2. Update status controls
+                const statusControls = card.querySelector('.status-controls');
+                if (status === 'pending') {
+                    statusControls.innerHTML = `
+                        <button class="btn btn-success status-btn" data-meetup-id="${meetupId}" data-status="approved">
+                            <i class="fas fa-check me-1"></i> Approve
+                        </button>
+                        <button class="btn btn-danger status-btn" data-meetup-id="${meetupId}" data-status="rejected">
+                            <i class="fas fa-times me-1"></i> Reject
+                        </button>
+                    `;
+                } else {
+                    statusControls.innerHTML = `
+                        <button class="btn btn-secondary status-btn" data-meetup-id="${meetupId}" data-status="pending">
+                            <i class="fas fa-undo me-1"></i> Reset to Pending
+                        </button>
+                    `;
+                }
+                
+                // Force browser to redraw the element (helps with some rendering issues)
+                card.style.display = 'none';
+                setTimeout(() => { card.style.display = ''; }, 10);
+            } else {
+                // Show error notification
+                showToast('Error', 'Failed to update status: ' + (data.message || 'Unknown error'), 'error');
+                button.innerHTML = originalHtml;
+            }
+            
+            // Re-enable the button
+            button.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error', 'An error occurred while updating the status.', 'error');
+            button.innerHTML = originalHtml;
+            button.disabled = false;
+        });
+    });
+});
+    </script>
+</body>
+</html>
